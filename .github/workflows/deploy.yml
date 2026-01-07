@@ -31,12 +31,12 @@ jobs:
         working-directory: ./terraform
 
       - name: Create Registry
-        run: terraform apply -auto-approve -target=azurerm_container_registry.acr -var="acr_name=${{ env.ACR_NAME }}" -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
+        run: terraform apply -auto-approve -target=azurerm_container_registry.CSW_LiveStatusMonitor_ACR
         working-directory: ./terraform
 
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    needs: provision-infra
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
