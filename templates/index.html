@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSW Queue Dashboard (Dark Gray & Blue Accent)</title>
+<link rel="icon" type="image/png" href="/static/favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+    /* --- REVISED DARK MODE BASE STYLES (Logo Colors) --- */
+    body {
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        /* Deep dark gray matching the logo background */
+        background-color: #1f1f1f; 
+        color: #e0e0e0; 
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Primary Blue Accent Color */
+    :root {
+        --primary-accent: #007ACC; 
+        --soft-border: #333333;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--primary-accent); 
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #2b2b2b;
+    }
+
+    /* --- HEADER CONTAINER STYLES --- */
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 40px;
+        background-color: #2b2b2b; /* Darker header matching logo background */
+        border-bottom: 2px solid var(--primary-accent); /* Blue accent border */
+        flex-wrap: wrap;
+        gap: 10px 20px;
+    }
+
+    .main-header h1 {
+        color: #e0e0e0; 
+        margin: 0;
+        font-size: 1.8em; 
+        font-weight: 700;
+        flex-grow: 1;
+        letter-spacing: -0.5px;
+    }
+    
+    /* --- CLOCK AND LOGO WRAPPER --- */
+    .header-right-container {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex-shrink: 0; 
+    }
+
+    /* --- REAL-TIME CLOCK STYLES (Blue Accent) --- */
+    #real-time-clock {
+        color: var(--primary-accent); 
+        font-size: 1.2em;
+        font-weight: 400;
+        white-space: nowrap;
+    }
+
+    /* --- LOGO IMAGE STYLES --- */
+    .logo-img {
+        height: 45px; 
+        width: auto;
+        flex-shrink: 0;
+        border-radius: 4px; 
+    }
+    
+    .dashboard { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 30px; 
+        padding: 30px; 
+        flex-grow: 1;
+    }
+    
+    /* --- KPI CARD STYLES --- */
+    .kpi-card, .list-container { 
+        background: #2b2b2b; /* Card background matches header */
+        padding: 25px; 
+        border-radius: 12px; 
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.5); 
+        border: 1px solid var(--soft-border); 
+        transition: transform 0.2s;
+    }
+    .kpi-card:hover, .list-container:hover {
+        transform: translateY(-2px); 
+    }
+    
+    .kpi-card h3, .list-container h3 { 
+        margin-top: 0; 
+        color: #90caf9; /* Soft blue accent for section titles */
+        font-size: 1.1em;
+        border-bottom: 1px solid var(--soft-border);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        font-weight: 500;
+    }
+    
+    .kpi-value { 
+        font-size: 2.8em; 
+        font-weight: 700; 
+        margin-bottom: 5px; 
+        color: #ffffff; /* White value for maximum impact */
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Containers that span full width (3 columns) */
+    .full-span-container { 
+        grid-column: span 3; 
+    }
+
+    /* --- Row container for call lists --- */
+    .call-lists-row {
+        grid-column: span 3; 
+        display: grid;
+        gap: 30px;
+        grid-template-columns: 1fr;
+    }
+
+    /* --- Layout for Tech Counts (now 3 columns) --- */
+    .tech-summary-container { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 30px; 
+        margin-top: 15px;
+    }
+    
+    .tech-metric { 
+        border-bottom: 1px solid var(--soft-border); 
+        padding: 8px 0; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.05em;
+    }
+    
+    .tech-metric strong { 
+        color: var(--primary-accent); /* Blue for numbers */
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+    
+    /* List styles */
+    #calls-list, #abandoned-calls-list, #call-history-list, #active-calls-list, #parked-calls-list,
+    #daily-call-counts, #daily-avg-talk-time { 
+        margin-top: 0; 
+        list-style: none; 
+        padding: 0; 
+        max-height: 350px; 
+        overflow-y: auto; 
+    }
+    
+    /* Specific height adjustments */
+    #abandoned-calls-list {
+        max-height: 300px; 
+    }
+    #parked-calls-list {
+        max-height: 150px; 
+    }
+    
+    #calls-list li, #abandoned-calls-list li, #call-history-list li, #active-calls-list li, #parked-calls-list li { 
+        padding: 10px 0; 
+        border-bottom: 1px solid var(--soft-border); 
+        display: flex; 
+        justify-content: space-between; 
+        font-size: 1.0em; 
+        align-items: center; 
+        transition: background-color 0.1s;
+    }
+
+    #calls-list li:hover, #active-calls-list li:hover {
+        background-color: #353535; /* Neutral hover effect */
+        border-radius: 4px;
+        padding-left: 5px;
+    }
+
+    #call-history-list li .agent-name { 
+        font-weight: bold; 
+        color: #ff9800; /* Orange for answered agent (Distinction from blue) */
+    }
+    
+    .caller-id { 
+        font-weight: bold; 
+        color: #ff9800; /* Orange for caller ID */
+    }
+    
+    .time-stamp, .list-duration { 
+        font-style: normal; 
+        font-size: 0.9em;
+        color: #aaaaaa; 
+        flex-shrink: 0; 
+        white-space: nowrap; 
+        padding-left: 15px; 
+    }
+
+    /* Specific style for active duration */
+    .list-duration {
+        font-weight: bold;
+        color: #66bb6a; /* Green for active call duration (Success status) */
+    }
+    
+    .sub-header { 
+        color: #90caf9; 
+        margin-top: 15px; 
+        margin-bottom: 10px;
+        font-weight: 500;
+        font-size: 1.1em;
+    }
+
+    /* Style for the main caller/agent info in lists */
+    .list-info {
+        flex-grow: 1;
+        word-break: break-word;
+    }
+
+    /* --- Style for the ticket link --- */
+    .list-info small {
+        display: block; 
+        font-style: italic;
+        color: #90caf9;
+        margin-top: 4px;
+        font-size: 0.85em;
+    }
+    .list-info small a {
+        color: var(--primary-accent); /* Blue link accent */
+        text-decoration: none;
+    }
+    .list-info small a:hover {
+        text-decoration: underline;
+    }
+
+    /* --- FOOTER STYLES --- */
+    .main-footer-status {
+        grid-column: span 3; 
+        background-color: #2b2b2b; 
+        color: #aaaaaa; 
+        padding: 15px 40px; 
+        font-size: 0.9em;
+        text-align: center;
+        border-top: 2px solid var(--primary-accent); 
+        margin-top: 30px; 
+    }
+    
+    .main-footer-status p {
+        margin: 5px 0;
+    }
+
+    /* --- RESPONSIVE STYLES (Kept layout structure) --- */
+    
+    @media (min-width: 769px) {
+        .dashboard {
+            grid-template-columns: repeat(3, 1fr); 
+        }
+        .call-lists-row {
+            grid-template-columns: 2fr 1.5fr; 
+        }
+        .tech-summary-container {
+            grid-template-columns: 1.2fr 1.2fr 1fr; 
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .main-header {
+            flex-direction: column; 
+            gap: 15px; 
+            padding: 20px;
+            text-align: center;
+        }
+        .header-right-container {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .main-header h1 {
+            font-size: 1.5em;
+        }
+        .logo-img {
+            height: 35px; 
+        }
+        .dashboard {
+            grid-template-columns: 1fr; 
+            gap: 20px;
+            padding: 20px;
+        }
+        .kpi-card h3 {
+            font-size: 1.05em;
+        }
+        .kpi-value {
+            font-size: 2.5em;
+        }
+        .full-span-container {
+            grid-column: span 1;
+        }
+        .tech-summary-container {
+            grid-template-columns: 1fr; 
+            gap: 20px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<header class="main-header">
+    <h1>📞 Capstone Works Real-Time Call Queue Dashboard</h1>
+    
+    <div class="header-right-container">
+        <div id="real-time-clock">Loading Clock...</div>
+
+        <img src="/static/capstone_works_logo.png" alt="Capstone Works Logo" class="logo-img"
+            onerror="this.style.display='none'">
+    </div>
+</header>
+
+<div class="dashboard">
+    <div class="kpi-card">
+        <h3>Current Calls in Queue 🚦</h3>
+        <div id="queue-count" class="kpi-value">0</div>
+    </div>
+    <div class="kpi-card">
+        <h3>Current Longest Wait Time ⏳</h3>
+        <div id="longest-wait" class="kpi-value">0s</div>
+    </div>
+    <div class="kpi-card">
+        <h3>Daily Average Hold 📈</h3>
+        <div id="daily-avg" class="kpi-value">N/A</div>
+    </div>
+    
+    <div class="kpi-card">
+        <h3>Calls Answered Today ✅</h3>
+        <div id="daily-answered-count" class="kpi-value">0</div>
+    </div>
+    <div class="kpi-card">
+        <h3>Daily Abandoned Calls 💔</h3>
+        <div id="daily-abandoned-count" class="kpi-value">0</div>
+    </div>
+    
+    <div class="list-container kpi-card">
+        <h3>🅿️ Parked Calls (71-73)</h3>
+        <ul id="parked-calls-list">
+            </ul>
+    </div>
+
+    <div class="call-lists-row">
+        <div class="list-container">
+            <h3>Current Calls Waiting in Queue 🔊</h3>
+            <ul id="calls-list">
+                </ul>
+        </div>
+        
+        <div class="list-container">
+            <h3>⚡ Current Active Calls</h3>
+            <ul id="active-calls-list">
+                </ul>
+        </div>
+    </div>
+    
+    <div class="full-span-container list-container">
+        <h3>Agent Performance Summary 🧑‍💻</h3>
+        <div class="tech-summary-container">
+            <div>
+                <h4 class="sub-header">Call Count Per Tech (Today) 📞</h4>
+                <div id="daily-call-counts">
+                    </div>
+            </div>
+            <div>
+                <h4 class="sub-header">Average Talk Time (Today) ⏱️</h4>
+                <div id="daily-avg-talk-time">
+                    </div>
+            </div>
+            <div>
+                <h4 class="sub-header">🛑 Abandoned Calls Today (Total: <span id="abandoned-calls-count-summary">0</span>)</h4>
+                <ul id="abandoned-calls-list">
+                    </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="full-span-container list-container">
+        <h3>Incoming Call History (Last 50) 📖</h3>
+        <ul id="call-history-list">
+            </ul>
+    </div>
+
+</div>
+
+<footer class="main-footer-status">
+    <p>System Status: <span id="system-status-time">Initializing...</span></p>
+    <p>&copy; 2026 Brian Herron/Capstone Works Inc. All rights reserved</p>
+</footer>
+
+<script>
+    // Adjust to your local timezone for history logging
+    const LOCAL_TIMEZONE = 'America/Chicago'; 
+
+    function formatTime(seconds) {
+        seconds = Math.max(0, Math.round(seconds)); 
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}m ${remainingSeconds.toString().padStart(2, '0')}s`;
+    }
+
+    // --- NEW: Function to update header clock ---
+    function updateHeaderClock() {
+        const now = new Date();
+        const options = {
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: true,
+            timeZone: LOCAL_TIMEZONE
+        };
+        const timeStr = now.toLocaleTimeString('en-US', options);
+        const dateStr = now.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            timeZone: LOCAL_TIMEZONE
+        });
+        
+        document.getElementById('real-time-clock').textContent = `${timeStr} ${dateStr}`;
+    }
+    
+    // --- Function to update footer status ---
+    function updateFooterStatus() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', {
+            hour: 'numeric', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: true
+        });
+        const dateStr = now.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        
+        document.getElementById('system-status-time').textContent = 
+            `Online - Last Update: ${timeStr}, ${dateStr} v1`;
+    }
+    
+    // Initialize and run the clocks
+    setInterval(updateHeaderClock, 1000);
+    setInterval(updateFooterStatus, 1000);
+    updateHeaderClock();
+    updateFooterStatus();
+    
+    
+    // --- MODIFIED: Function to render Agent Lists and Abandoned Calls ---
+    function renderTechMetrics(dailyReport) {
+        const countsDiv = document.getElementById('daily-call-counts');
+        const avgTalkDiv = document.getElementById('daily-avg-talk-time'); 
+        const abandonedListDiv = document.getElementById('abandoned-calls-list');
+        
+        countsDiv.innerHTML = '';
+        avgTalkDiv.innerHTML = ''; 
+        abandonedListDiv.innerHTML = '';
+        
+        if (!dailyReport) return;
+
+        const agentsWithCalls = dailyReport.calls_by_agent || {};
+        const agentsWithTalkTime = dailyReport.agent_avg_talk_time || {};
+        
+        const allAgents = new Set([
+            ...Object.keys(agentsWithCalls), 
+            ...Object.keys(agentsWithTalkTime)
+        ]);
+        
+        if (allAgents.size === 0) {
+            countsDiv.innerHTML = '<div class="tech-metric" style="border-bottom:none; color:#aaaaaa;">No agent calls today.</div>';
+            avgTalkDiv.innerHTML = '<div class="tech-metric" style="border-bottom:none; color:#aaaaaa;">No agent calls today.</div>';
+        } else {
+            allAgents.forEach(agent => {
+                // 1. Call Count Per Tech List
+                const count = agentsWithCalls[agent] || 0;
+                countsDiv.innerHTML += `
+                    <div class="tech-metric">${agent} <strong>${count} </strong></div>
+                `;
+                
+                // 2. Average Talk Time List
+                const avgSeconds = agentsWithTalkTime[agent] || 0;
+                avgTalkDiv.innerHTML += `
+                    <div class="tech-metric">${agent} <strong>${formatTime(avgSeconds)} </strong></div>
+                `;
+            });
+        }
+        
+        // 3. Abandoned Calls Detailed List
+        let abandonedCalls = dailyReport.abandoned_call_details || [];
+        abandonedCalls = abandonedCalls.slice(-50).reverse(); // Show last 50 abandoned calls
+        document.getElementById('abandoned-calls-count-summary').textContent = abandonedCalls.length;
+        
+        if(abandonedCalls.length === 0) {
+            abandonedListDiv.innerHTML = '<li style="color: #aaaaaa; border-bottom: none;">No abandoned calls today.</li>';
+        } else {
+            abandonedCalls.forEach(call => {
+                abandonedListDiv.innerHTML += `
+                    <li>
+                        <span class="list-info">Call from <span class="caller-id" style="color:#ff5252;">${call.name} (${call.number})</span></span>
+                        <span class="time-stamp">Waited ${formatTime(call.wait_time)} at ${call.time}</span>
+                    </li>
+                `;
+            });
+        }
+    }
+    
+    // --- Render Answered Call History ---
+    function renderCallHistory(callLog) {
+        const historyList = document.getElementById('call-history-list');
+        historyList.innerHTML = '';
+        
+        if (!callLog || callLog.length === 0) {
+            historyList.innerHTML = '<li style="color: #aaaaaa; border-bottom: none;">No recent call activity.</li>'; 
+            return;
+        }
+        
+        // Show the last 50 entries (most recent)
+        const recentCalls = callLog.slice(-50).reverse();
+        
+        recentCalls.forEach(call => {
+            // Parse the ISO 8601 timestamp
+            const timestamp = new Date(call.timestamp + 'Z'); 
+            const timeStr = timestamp.toLocaleTimeString(undefined, {
+                hour: 'numeric', 
+                minute: '2-digit', 
+                second: '2-digit',
+                timeZone: LOCAL_TIMEZONE 
+            });
+            
+            const callerName = call.caller_id !== 'Unknown' ? call.caller_id : call.caller_number;
+            const callerNumber = (call.caller_number !== 'Unknown' && call.caller_number !== callerName) ? ` (${call.caller_number})` : '';
+            
+            const agentColor = call.agent === "Abandoned" ? '#ff5252' : '#ff9800'; // Red for Abandoned, Orange for Answered
+            const actionText = call.agent === "Abandoned" ? 
+                `abandoned the queue` : 
+                `answered by <span class="agent-name" style="color: ${agentColor};">${call.agent}</span>`;
+            
+            historyList.innerHTML += `
+                <li>
+                    <div class="list-info">
+                        <span class="caller-id" style="color: ${agentColor};">${callerName}</span>
+                        <span class="caller-number"> ${callerNumber} </span> ${actionText}
+                    </div>
+                    <span class="time-stamp">${timeStr}</span>
+                </li>
+            `;
+        });
+    }
+    
+    // --- Render Parked Calls List ---
+    function renderParkedCalls(parkedCalls) {
+        const list = document.getElementById('parked-calls-list');
+        list.innerHTML = '';
+        if (!parkedCalls || parkedCalls.length === 0) {
+            list.innerHTML = '<li style="color: #aaaaaa; border-bottom: none;">No parked calls.</li>';
+        } else {
+            parkedCalls.forEach(call => {
+                const li = document.createElement('li');
+                const callerName = call.caller_name !== 'Unknown' ? call.caller_name : call.caller_num;
+                li.innerHTML = `
+                    <span class="list-info">
+                        <span style="font-weight: bold; color: #f0f0f0;">${callerName}</span>
+                    </span>
+                    <span class="list-duration" style="color: #ffc107; font-weight:bold;">
+                        ${formatTime(call.duration_seconds)}
+                    </span>
+                `;
+                list.appendChild(li);
+            });
+        }
+    }
+    
+    const fontOptions = [
+        'Arial, sans-serif', '"Helvetica Neue", Helvetica, Arial, sans-serif', '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif', '"Courier New", Courier, monospace', '"Times New Roman", Times, serif', 'Georgia, serif', 'Verdana, Geneva, sans-serif', '"Trebuchet MS", Helvetica, sans-serif', '"Lucida Console", Monaco, monospace', '"Palatino Linotype", "Book Antiqua", Palatino, serif', '"Gill Sans", "Gill Sans MT", Calibri, sans-serif', '"Impact", Charcoal, sans-serif', '"Comic Sans MS", cursive, sans-serif', '"Lucida Sans Unicode", "Lucida Grande", sans-serif', '"Tahoma", Geneva, sans-serif', '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif', '"Copperplate", "Copperplate Gothic Light", fantasy', '"Brush Script MT", cursive', '"Optima", "Segoe UI", Tahoma, Geneva, Verdana, sans-seif'
+    ];
+
+    // Connect to the Server-Sent Events stream
+    let source = new EventSource("/stream");
+
+    source.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        // --- Current Queue KPIs ---
+        document.getElementById('queue-count').textContent = data.current_queue_count;
+        document.getElementById('longest-wait').textContent = formatTime(data.longest_wait_time_seconds);
+
+        // --- Daily Report KPIs ---
+        if (data.daily_report && data.daily_report.avg_wait_time_seconds !== undefined) {
+            const dailyAvgSec = Math.round(data.daily_report.avg_wait_time_seconds);
+            const dailyAbandons = data.daily_report.abandoned_calls_count || 0;
+            
+            document.getElementById('daily-avg').textContent = formatTime(dailyAvgSec);
+            document.getElementById('daily-abandoned-count').textContent = dailyAbandons;
+            document.getElementById('daily-answered-count').textContent = data.daily_report.total_calls || 0;
+        } else {
+            document.getElementById('daily-avg').textContent = 'N/A';
+            document.getElementById('daily-abandoned-count').textContent = '0';
+            document.getElementById('daily-answered-count').textContent = '0';
+        }
+        
+        // --- Tech Performance & Abandoned Details ---
+        if (data.daily_report) {
+            renderTechMetrics(data.daily_report);
+        }
+        
+        // --- Update Answered Call History List ---
+        if (data.call_log) {
+            renderCallHistory(data.call_log);
+        }
+
+        // --- Update Parked Calls List ---
+        if (data.parked_calls) {
+            renderParkedCalls(data.parked_calls);
+        }
+
+        // --- Update Current Calls List ---
+        const callsList = document.getElementById('calls-list');
+        callsList.innerHTML = '';
+        if (data.calls_in_queue.length === 0) {
+            callsList.innerHTML = '<li style="color: #aaaaaa; border-bottom: none;">Queue is clear.</li>';
+        } else {
+            data.calls_in_queue.forEach(call => {
+                const li = document.createElement('li');
+                nameDisplay = call.name !== 'Unknown' ? call.name : call.caller_id;
+                callerNumber = (call.caller_id !== 'Unknown' && call.caller_id !== nameDisplay) ? ` (${call.caller_id})` : '';
+                
+                // Color logic: Red for long waits, Amber for medium, Blue for short/normal
+                let waitColor = '#007ACC'; // Default: Blue
+                if (call.wait_time > 120) { // 2 minutes
+                    waitColor = '#ffc107'; // Amber (Warning)
+                }
+                if (call.wait_time > 240) { // 4 minutes
+                    waitColor = '#ff5252'; // Red (Critical)
+                }
+
+                let waitStyle = `font-weight: bold; color: ${waitColor};`;
+                if (call.wait_time > 300) {
+                    // This is the fun/chaotic part from your original code, kept it!
+                    waitStyle += ` font-size: 100pt; font-family: ${fontOptions[call.wait_time % fontOptions.length]};`;
+                }
+
+                li.innerHTML = `
+                    <span class="list-info">
+                        <span style="font-weight: bold; color: #f0f0f0;">${nameDisplay}</span>
+                        <span>${callerNumber}</span>
+                    </span>
+                    <span class="list-duration" style="${waitStyle}">
+                        ${formatTime(call.wait_time)}
+                    </span>
+                `;
+                callsList.appendChild(li);
+            });
+        }
+
+        // --- Update Active Calls List ---
+        const activeCallsList = document.getElementById('active-calls-list');
+        activeCallsList.innerHTML = '';
+        if (!data.live_active_calls || data.live_active_calls.length === 0) {
+            activeCallsList.innerHTML = '<li style="color: #aaaaaa; border-bottom: none;">No active agent calls.</li>';
+        } else {
+            data.live_active_calls.forEach(call => {
+                const li = document.createElement('li');
+                const ticketHTML = call.recent_ticket ? call.recent_ticket : '';
+                
+                li.innerHTML = `
+                    <span class="list-info">
+                        <div>
+                            <span style="font-weight: bold; color: #ff9800;">${call.agent_name}</span>
+                            <span style="color: #e0e0e0;">on call with</span>
+                            <span style="font-weight: bold; color: #90caf9;">${call.caller_name}</span>
+                        </div>
+                        ${ticketHTML}
+                    </span>
+                    <span class="list-duration">
+                        ${formatTime(call.duration_seconds)}
+                    </span>
+                `;
+                activeCallsList.appendChild(li);
+            });
+        }
+        
+    };
+
+    source.onerror = function(err) {
+        console.error("EventSource failed:", err);
+        document.getElementById('queue-count').textContent = "You ain't Connected";
+        document.getElementById('longest-wait').textContent = "Still Ain't Connected";
+        
+        setTimeout(() => {
+            if (source.readyState === EventSource.CLOSED) {
+                console.log("Reconnecting to EventSource...");
+                source = new EventSource("/stream"); 
+            }
+        }, 5000);
+    };
+</script>
+</body>
+</html>

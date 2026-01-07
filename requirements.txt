@@ -1,0 +1,9 @@
+panoramisk
+pymsteams
+requests
+flask
+flask-socketio
+python-dotenv
+eventlet
+httpx
+gunicorn
