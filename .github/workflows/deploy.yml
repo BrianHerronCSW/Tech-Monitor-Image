@@ -1,0 +1,65 @@
+name: Build and Deploy Tech Monitor
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACR_NAME: cswlivestatusmonitoracr
+  RESOURCE_GROUP: CSW-LiveStatusMonitor-RG
+  CONTAINER_APP_NAME: CSW-LiveStatusMonitor-App
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure 
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and push Docker image to Azure Container Registry
+      run: |
+        az acr login --name ${{ env.ACR_NAME }}
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/tech-status-monitor:${{ github.run_id }} .
+        docker push ${{ env.ACR_NAME }}.azurecr.io/tech-status-monitor:${{ github.run_id }}
+
+  terraform-deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+  
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+  
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve \
+          -var="container_image_tag=${{ github.run_id }}" \
+          -var="hostname=${{ secrets.ASTERISK_HOST }}" \
+          -var="username=${{ secrets.ASTERISK_USER }}" \
+          -var="password=${{ secrets.ASTERISK_PASS }}" \
+          -var="Authorization=${{ secrets.CW_AUTH }}" \
+          -var="CW_ClientID=${{ secrets.CW_CLIENT_ID }}" \
+          -var="techs=${{ secrets.TECHS_JSON }}" \
+          -var="TEAMS_WEBHOOK_URL=${{ secrets.WEBHOOK_1 }}" \
+          -var="TEAMS_WEBHOOK2_URL=${{ secrets.WEBHOOK_2 }}" \
+          -var="TEAMS_WEBHOOK3_URL=${{ secrets.WEBHOOK_3 }}" \
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.WEBHOOK_4 }}"
+        working-directory: ./terraform
