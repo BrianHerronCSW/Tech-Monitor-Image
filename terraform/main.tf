@@ -30,7 +30,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   name                = "csw-livestatusmonitor-app"
   container_app_environment_id = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env.id
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  location            = azure.rm_resource_group.CSW_LiveStatusMonitor_RG.location
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
   revision_mode = "Single"
 
   secret {
