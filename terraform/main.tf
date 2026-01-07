@@ -55,7 +55,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
 
   secret {
     name  = "Authorization"
-    value = var.Authorization
+    value = var.CW_Authorization
   }
 
   secret {

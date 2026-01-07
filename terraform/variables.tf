@@ -28,7 +28,7 @@ variable "password" {
   sensitive   = true
 }
 
-variable "Authorization" {
+variable "CW_Authorization" {
   description = "ConnectWise API Authorization header value."
   type        = string
   sensitive   = true
