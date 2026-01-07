@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "CSW_LiveStatusMonitor_RG" {
   name     = "CSW-LiveStatusMonitor-RG"
-  location = "${var.resource_group_location}"
+  location = "East US"
 }
 
 resource "azurerm_container_registry" "CSW_LiveStatusMonitor_ACR" {
