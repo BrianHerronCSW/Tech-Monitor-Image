@@ -11,7 +11,7 @@ terraform {
   }
   backend "azurerm" {
     resource_group_name = "CSW-TFSTATE-RG"
-    storage_account_name = "cswlivestatusmonitorstorage"
+    storage_account_name = "cswtfstatesa"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
