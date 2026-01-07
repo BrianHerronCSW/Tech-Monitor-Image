@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "CSW_LiveStatusMonitor_RG" {
   name     = "CSW-LiveStatusMonitor-RG"
-  location = var.resource_group_location
+  location = "${var.resource_group_location}"
 }
 
 resource "azurerm_container_registry" "CSW_LiveStatusMonitor_ACR" {
@@ -30,7 +30,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   name                = "csw-livestatusmonitor-app"
   container_app_environment_id = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env.id
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  location            = var.resource_group_location
+  location            = azure.rm_resource_group.CSW_LiveStatusMonitor_RG.location
   revision_mode = "Single"
 
   secret {
