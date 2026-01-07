@@ -53,7 +53,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   }
 
   secret {
-    name  = "cw_authorization"
+    name  = "cw-authorization"
     value = var.CW_Authorization
   }
 
@@ -193,7 +193,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     }
       env {
         name  = "cw_authorization"
-        secret_name = "cw_authorization"
+        secret_name = "cw-authorization"
     }
       env {
         name  = "cw-client-id"
