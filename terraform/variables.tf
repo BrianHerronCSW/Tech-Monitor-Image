@@ -58,12 +58,14 @@ variable "CLIENT_SECRET" {
   description = "Azure Client Secret for ACR authentication."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "TEAM_ID" {
   description = "Azure Subscription ID for ACR authentication."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "CHANNEL_ID" {
@@ -71,6 +73,7 @@ variable "CHANNEL_ID" {
   type        = string
   sensitive   = true
   default     = ""
+
 }
 
 variable "CHAT_ID" {
@@ -139,22 +142,24 @@ variable "recipient_emails" {
 variable "QR_QUEUE" {
   description = "Queue name for QR code generation."
   type        = string
+  default     = "15"
 }
 
 variable "QR_START_HOUR" {
   description = "Start hour for QR code generation."
   type        = string
+  default     = "6"
 }
 
 variable "QR_END_HOUR" {
   description = "End hour for QR code generation."
   type        = string
+  default     = "7"
 }
 
 variable "techs" {
   description = "List of technician names."
   type        = string
-  default     = "{\"100\": \"Front Conference\", \"101\": \"Conference Room Mobile\", \"102\": \"Chuck Adams\", \"103\": \"Easton\", \"104\": \"Cindy Adams\", \"105\": \"Dispatch Backup\", \"106\": \"Logan\", \"107\": \"Chuck (Line 2)\", \"108\": \"Clarissa\", \"109\": \"Alex Adams\", \"110\": \"Support Desk\", \"111\": \"open\", \"112\": \"Indusoft Support\", \"113\": \"Open\", \"114\": \"Capstone Support\", \"115\": \"Tim Home\", \"116\": \"Open\", \"117\": \"Vendors\", \"118\": \"Accounting\", \"120\": \"Open\", \"121\": \"Open\", \"122\": \"Daniel\", \"124\": \"Open Ext\", \"125\": \"Brian\", \"126\": \"Kalani\", \"127\": \"Derrick\", \"129\": \"John\", \"130\": \"Capstone Support\", \"140\": \"Test Extension\", \"150\": \"Cindy - Home\", \"151\": \"John Home\", \"152\": \"Brian - Home\", \"153\": \"IE2\", \"154\": \"C-Adams - Home\", \"155\": \"Sahil Home\", \"156\": \"Alex - Home\", \"158\": \"Clarissa - Home\", \"159\": \"Capstone Support\", \"160\": \"Kalani - Home\", \"161\": \"Logan Home\", \"162\": \"Daniel Home\", \"163\": \"Spare desk\", \"190\": \"ATA Test Extension\", \"198\": \"FH Support\", \"199\": \"Support\", \"200\": \"Conference\", \"202\": \"Kitchen\", \"203\": \"203\", \"210\": \"Mobile 1\", \"211\": \"Mobile 2\", \"212\": \"CTA Mobile\", \"213\": \"Mobile 3\", \"220\": \"Adams Home\", \"232\": \"Test Cisco SPA\", \"302\": \"302\", \"350\": \"QR Hotdesk\", \"400\": \"LOC Help Desk\", \"501\": \"CellPhone\", \"599\": \"Emergency Support\", \"700\": \"Main Conference Room\", \"701\": \"Small Conference Room\", \"1001\": \"OIB 4 Duneside ext1\", \"1002\": \"OIB 4 Duneside ext2\"}"
 }
 
 variable "TEAMS_WEBHOOK_URL" {
