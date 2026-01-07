@@ -34,12 +34,29 @@ jobs:
         run: |
           terraform apply -auto-approve -input=false \
           -target=azurerm_container_registry.CSW_LiveStatusMonitor_ACR \
-          -var="hostname=${{ secrets.hostname }}" \
-          -var="username=${{ secrets.username }}" \
-          -var="password=${{ secrets.password }}" \
-          -var="CW_Authorization=${{ secrets.CW_Authorization }}" \
-          -var="CW_ClientID=${{ secrets.CW_ClientID }}" \
-          -var="techs=${{ secrets.techs }}" \
+          -var="hostname=${{ secrets.HOSTNAME }}" \
+          -var="username=${{ secrets.USERNAME }}" \
+          -var="password=${{ secrets.PASSWORD }}" \
+          -var="Authorization=${{ secrets.CW_AUTHORIZATION }}" \
+          -var="CW_ClientID=${{ secrets.CW_CLIENTID }}" \
+          -var="CLIENT_ID=${{ secrets.CLIENT_ID }}" \
+          -var="CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" \
+          -var="TENANT_ID=${{ secrets.TENANT_ID }}" \
+          -var="TEAM_ID=${{ secrets.TEAM_ID }}" \
+          -var="CHANNEL_ID=${{ secrets.CHANNEL_ID }}" \
+          -var="CHAT_ID=${{ secrets.CHAT_ID }}" \
+          -var="SENDER_USER_ID=${{ secrets.SENDER_USER_ID }}" \
+          -var="SENDER_DISPLAY_NAME=${{ secrets.SENDER_DISPLAY_NAME }}" \
+          -var="SMTP_SERVER=${{ secrets.SMTP_SERVER }}" \
+          -var="SMTP_PORT=${{ secrets.SMTP_PORT }}" \
+          -var="SMTP_USER=${{ secrets.SMTP_USER }}" \
+          -var="SMTP_SENDER_EMAIL=${{ secrets.SMTP_SENDER_EMAIL }}" \
+          -var="SMTP_AUTH_PASSWORD=${{ secrets.SMTP_AUTH_PASSWORD }}" \
+          -var="recipient_emails=${{ secrets.RECIPIENT_EMAILS }}" \
+          -var="QR_QUEUE=${{ secrets.QR_QUEUE }}" \
+          -var="QR_START_HOUR=${{ secrets.QR_START_HOUR }}" \
+          -var="QR_END_HOUR=${{ secrets.QR_END_HOUR }}" \
+          -var="techs=${{ secrets.TECHS }}" \
           -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
           -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
@@ -87,12 +104,29 @@ jobs:
         run: |
           terraform apply -auto-approve \
           -var="container_image_tag=${{ github.run_id }}" \
-          -var="hostname=${{ secrets.hostname }}" \
-          -var="username=${{ secrets.username }}" \
-          -var="password=${{ secrets.password }}" \
-          -var="CW_Authorization=${{ secrets.CW_Authorization }}" \
-          -var="CW_ClientID=${{ secrets.CW_ClientID }}" \
-          -var="techs=${{ secrets.techs }}" \
+          -var="hostname=${{ secrets.HOSTNAME }}" \
+          -var="username=${{ secrets.USERNAME }}" \
+          -var="password=${{ secrets.PASSWORD }}" \
+          -var="Authorization=${{ secrets.CW_AUTHORIZATION }}" \
+          -var="CW_ClientID=${{ secrets.CW_CLIENTID }}" \
+          -var="CLIENT_ID=${{ secrets.CLIENT_ID }}" \
+          -var="CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" \
+          -var="TENANT_ID=${{ secrets.TENANT_ID }}" \
+          -var="TEAM_ID=${{ secrets.TEAM_ID }}" \
+          -var="CHANNEL_ID=${{ secrets.CHANNEL_ID }}" \
+          -var="CHAT_ID=${{ secrets.CHAT_ID }}" \
+          -var="SENDER_USER_ID=${{ secrets.SENDER_USER_ID }}" \
+          -var="SENDER_DISPLAY_NAME=${{ secrets.SENDER_DISPLAY_NAME }}" \
+          -var="SMTP_SERVER=${{ secrets.SMTP_SERVER }}" \
+          -var="SMTP_PORT=${{ secrets.SMTP_PORT }}" \
+          -var="SMTP_USER=${{ secrets.SMTP_USER }}" \
+          -var="SMTP_SENDER_EMAIL=${{ secrets.SMTP_SENDER_EMAIL }}" \
+          -var="SMTP_AUTH_PASSWORD=${{ secrets.SMTP_AUTH_PASSWORD }}" \
+          -var="recipient_emails=${{ secrets.RECIPIENT_EMAILS }}" \
+          -var="QR_QUEUE=${{ secrets.QR_QUEUE }}" \
+          -var="QR_START_HOUR=${{ secrets.QR_START_HOUR }}" \
+          -var="QR_END_HOUR=${{ secrets.QR_END_HOUR }}" \
+          -var="techs=${{ secrets.TECHS }}" \
           -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
           -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
