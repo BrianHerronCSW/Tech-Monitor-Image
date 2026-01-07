@@ -68,60 +68,70 @@ variable "CHANNEL_ID" {
   description = "Microsoft Teams Channel ID for notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "CHAT_ID" {
   description = "Microsoft Teams Chat ID for notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SENDER_USER_ID" {
   description = "Email address of the sender user for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SENDER_DISPLAY_NAME" {
   description = "Display name of the sender for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SMTP_SERVER" {
   description = "SMTP server address for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SMTP_PORT" {
   description = "SMTP server port for Email sending notifications."
   type        = number
   sensitive   = true
+  default     = ""
 }
 
 variable "SMTP_SENDER_EMAIL" {
   description = "Sender email address for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SMTP_USER" {
   description = "Username for SMTP authentication for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "SMTP_AUTH_PASSWORD" {
   description = "Password for SMTP authentication for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "recipient_emails" {
   description = "Recipient email address for Email sending notifications."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "QR_QUEUE" {
