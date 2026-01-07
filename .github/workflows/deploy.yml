@@ -11,6 +11,29 @@ env:
   CONTAINER_APP_NAME: CSW-LiveStatusMonitor-App
 
 jobs:
+
+  provision-infra:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Create Registry
+        run: terraform apply -auto-approve -target=azurerm_container_registry.acr -var="acr_name=${{ env.ACR_NAME }}" -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
+        working-directory: ./terraform
+
   build-and-deploy:
     runs-on: ubuntu-latest
 
