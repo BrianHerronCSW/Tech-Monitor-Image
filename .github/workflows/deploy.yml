@@ -87,14 +87,14 @@ jobs:
         run: |
           terraform apply -auto-approve \
           -var="container_image_tag=${{ github.run_id }}" \
-          -var="hostname=${{ secrets.ASTERISK_HOST }}" \
-          -var="username=${{ secrets.ASTERISK_USER }}" \
-          -var="password=${{ secrets.ASTERISK_PASS }}" \
-          -var="Authorization=${{ secrets.CW_AUTH }}" \
-          -var="CW_ClientID=${{ secrets.CW_CLIENT_ID }}" \
-          -var="techs=${{ secrets.TECHS_JSON }}" \
-          -var="TEAMS_WEBHOOK_URL=${{ secrets.WEBHOOK_1 }}" \
-          -var="TEAMS_WEBHOOK2_URL=${{ secrets.WEBHOOK_2 }}" \
-          -var="TEAMS_WEBHOOK3_URL=${{ secrets.WEBHOOK_3 }}" \
-          -var="TEAMS_WEBHOOK4_URL=${{ secrets.WEBHOOK_4 }}"
+          -var="hostname=${{ secrets.hostname }}" \
+          -var="username=${{ secrets.username }}" \
+          -var="password=${{ secrets.password }}" \
+          -var="CW_Authorization=${{ secrets.CW_Authorization }}" \
+          -var="CW_ClientID=${{ secrets.CW_ClientID }}" \
+          -var="techs=${{ secrets.techs }}" \
+          -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
+          -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
+          -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}"
         working-directory: ./terraform
