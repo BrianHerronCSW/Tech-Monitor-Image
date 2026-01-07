@@ -103,7 +103,7 @@ variable "SMTP_PORT" {
   description = "SMTP server port for Email sending notifications."
   type        = number
   sensitive   = true
-  default     = ""
+  default     = 587
 }
 
 variable "SMTP_SENDER_EMAIL" {
