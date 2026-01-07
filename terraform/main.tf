@@ -170,7 +170,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
     username = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_username
-    password_secret_name = "ACR-Password"
+    password_secret_name = "acr-password"
   }
 
   template{
