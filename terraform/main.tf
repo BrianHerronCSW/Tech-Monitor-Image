@@ -33,7 +33,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   revision_mode = "Single"
 
   secret {
-    name  = "ACR-Password"
+    name  = "acr-password"
     value = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_password
   }
 
@@ -53,92 +53,92 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   }
 
   secret {
-    name  = "Authorization"
+    name  = "authorization"
     value = var.CW_Authorization
   }
 
   secret {
-    name  = "CW_ClientID"
+    name  = "cw-client-id"
     value = var.CW_ClientID
   }
 
   secret {
-    name  = "CLIENT_ID"
+    name  = "client-id"
     value = var.CLIENT_ID
   }
 
   secret {
-    name  = "CLIENT_SECRET"
+    name  = "client-secret"
     value = var.CLIENT_SECRET
   }
 
   secret {
-    name  = "TEAM_ID"
+    name  = "team-id"
     value = var.TEAM_ID
   }
 
   secret  {
-    name  = "CHANNEL_ID"
+    name  = "channel-id"
     value = var.CHANNEL_ID
   }
 
   secret {
-    name  = "CHAT_ID"
+    name  = "chat-id"
     value = var.CHAT_ID
   }
 
   secret {
-    name  = "TENANT_ID"
+    name  = "tenant-id"
     value = var.TENANT_ID
   }
 
   secret {
-    name  = "SENDER_USER_ID"
+    name  = "sender-user-id"
     value = var.SENDER_USER_ID
   }
 
   secret {
-    name  = "SENDER_DISPLAY_NAME"
+    name  = "sender-display-name"
     value = var.SENDER_DISPLAY_NAME
   }
 
   secret {
-    name  = "SMTP_SERVER"
+    name  = "smtp-server"
     value = var.SMTP_SERVER
   }
 
   secret {
-    name  = "SMTP_PORT"
+    name  = "smtp-port"
     value = var.SMTP_PORT
   }
 
   secret {
-    name  = "SMTP_USER"
+    name  = "smtp-user"
     value = var.SMTP_USER
   }
 
   secret {
-    name  = "SMTP_AUTH_PASSWORD"
+    name  = "smtp-auth-password"
     value = var.SMTP_AUTH_PASSWORD
   }
 
   secret {
-    name  = "RECIPIENT_EMAILS"
+    name  = "recipient-emails"
     value = var.recipient_emails
   }
 
   secret {
-    name  = "QR_QUEUE"
+    name  = "qr-queue"
     value = var.QR_QUEUE
   }
 
   secret {
-    name  = "QR_START_HOUR"
+    name  = "qr-start-hour"
     value = var.QR_START_HOUR
   }
 
   secret {
-    name  = "QR_END_HOUR"
+    name  = "qr-end-hour"
     value = var.QR_END_HOUR
   }
 
@@ -148,22 +148,22 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   }
 
   secret {
-    name  = "TEAMS_WEBHOOK_URL"
+    name  = "teams-webhook-url"
     value = var.TEAMS_WEBHOOK_URL
   }
 
   secret {
-    name  = "TEAMS_WEBHOOK2_URL"
+    name  = "teams-webhook2-url"
     value = var.TEAMS_WEBHOOK2_URL
   }
 
   secret {
-    name = "TEAMS_WEBHOOK3_URL"
+    name = "teams-webhook3-url"
     value = var.TEAMS_WEBHOOK3_URL
   }
 
   secret {
-    name = "TEAMS_WEBHOOK4_URL"
+    name = "teams-webhook4-url"
     value = var.TEAMS_WEBHOOK4_URL
   }
 
@@ -192,96 +192,96 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
         secret_name = "password"
     }
       env {
-        name  = "Authorization"
-        secret_name = "Authorization"
+        name  = "authorization"
+        secret_name = "authorization"
     }
       env {
-        name  = "CW_ClientID"
-        secret_name = "CW_ClientID"
+        name  = "cw-client-id"
+        secret_name = "cw-client-id"
     }
       env {
-        name  = "CLIENT_ID"
-        secret_name = "CLIENT_ID"
+        name  = "client-id"
+        secret_name = "client-id"
     }
       env {
-        name  = "CLIENT_SECRET"
-        secret_name = "CLIENT_SECRET"
+        name  = "client-secret"
+        secret_name = "client-secret"
     }
       env {
-        name  = "TENANT_ID"
-        secret_name = "TENANT_ID"
+        name  = "tenant-id"
+        secret_name = "tenant-id"
     }
       env {
-        name  = "TEAM_ID"
-        secret_name = "TEAM_ID"
+        name  = "team-id"
+        secret_name = "team-id"
     }
       env {
-        name  = "CHANNEL_ID"
-        secret_name = "CHANNEL_ID"
+        name  = "channel-id"
+        secret_name = "channel-id"
     }
       env {
-        name  = "CHAT_ID"
-        secret_name = "CHAT_ID"
+        name  = "chat-id"
+        secret_name = "chat-id"
     }
       env {
-        name  = "SENDER_USER_ID"
-        secret_name = "SENDER_USER_ID"
+        name  = "sender-user-id"
+        secret_name = "sender-user-id"
     }
       env {
-        name  = "SENDER_DISPLAY_NAME"
-        secret_name = "SENDER_DISPLAY_NAME"
+        name  = "sender-display-name"
+        secret_name = "sender-display-name"
     }
       env {
-        name  = "SMTP_SERVER"
-        secret_name = "SMTP_SERVER"
+        name  = "smtp-server"
+        secret_name = "smtp-server"
     }
       env {
-        name  = "SMTP_PORT"
-        secret_name = "SMTP_PORT"
+        name  = "smtp-port"
+        secret_name = "smtp-port"
     }
       env {
-        name  = "SMTP_USER"
-        secret_name = "SMTP_USER"
+        name  = "smtp-user"
+        secret_name = "smtp-user"
     }
       env {
-        name  = "SMTP_AUTH_PASSWORD"
-        secret_name = "SMTP_AUTH_PASSWORD"
+        name  = "smtp-auth-password"
+        secret_name = "smtp-auth-password"
     }
       env {
-        name  = "RECIPIENT_EMAILS"
-        secret_name = "RECIPIENT_EMAILS"
+        name  = "recipient-emails"
+        secret_name = "recipient-emails"
     }
       env {
-        name  = "QR_QUEUE"
-        secret_name = "QR_QUEUE"
+        name  = "qr-queue"
+        secret_name = "qr-queue"
     }
       env {
-        name  = "QR_START_HOUR"
-        secret_name = "QR_START_HOUR"
+        name  = "qr-start-hour"
+        secret_name = "qr-start-hour"
     }
       env {
-        name  = "QR_END_HOUR"
-        secret_name = "QR_END_HOUR"
+        name  = "qr-end-hour"
+        secret_name = "qr-end-hour"
     }
       env {
         name  = "techs"
         secret_name = "techs"
     }
       env {
-        name  = "TEAMS_WEBHOOK_URL"
-        secret_name = "TEAMS_WEBHOOK_URL"
+        name  = "teams_webhook_url"
+        secret_name = "teams_webhook_url"
     }
       env {
-        name  = "TEAMS_WEBHOOK2_URL"
-        secret_name = "TEAMS_WEBHOOK2_URL"
+        name  = "teams_webhook2_url"
+        secret_name = "teams_webhook2_url"
     }
       env {
-        name  = "TEAMS_WEBHOOK3_URL"
-        secret_name = "TEAMS_WEBHOOK3_URL"
+        name  = "teams_webhook3_url"
+        secret_name = "teams_webhook3_url"
     }
       env {
-        name  = "TEAMS_WEBHOOK4_URL"
-        secret_name = "TEAMS_WEBHOOK4_URL"
+        name  = "teams_webhook4_url"
+        secret_name = "teams_webhook4_url"
     }
     }
   }
