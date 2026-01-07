@@ -44,12 +44,14 @@ variable "TENANT_ID" {
   description = "Azure Tenant ID for ACR authentication."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "CLIENT_ID" {
   description = "Azure Client ID for ACR authentication."
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "CLIENT_SECRET" {

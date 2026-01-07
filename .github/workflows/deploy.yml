@@ -31,7 +31,19 @@ jobs:
         working-directory: ./terraform
 
       - name: Create Registry
-        run: terraform apply -auto-approve -target=azurerm_container_registry.CSW_LiveStatusMonitor_ACR
+        run: |
+          terraform apply -auto-approve -input=false \
+          -target=azurerm_container_registry.CSW_LiveStatusMonitor_ACR \
+          -var="hostname=${{ secrets.hostname }}" \
+          -var="username=${{ secrets.username }}" \
+          -var="password=${{ secrets.password }}" \
+          -var="CW_Authorization=${{ secrets.CW_Authorization }}" \
+          -var="CW_ClientID=${{ secrets.CW_ClientID }}" \
+          -var="techs=${{ secrets.techs }}" \
+          -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
+          -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
+          -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}"
         working-directory: ./terraform
 
   build-and-deploy:
