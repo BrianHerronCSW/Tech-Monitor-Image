@@ -268,20 +268,20 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
         secret_name = "techs"
     }
       env {
-        name  = "teams_webhook_url"
-        secret_name = "teams_webhook_url"
+        name  = "teams-webhook-url"
+        secret_name = "teams-webhook-url"
     }
       env {
-        name  = "teams_webhook2_url"
-        secret_name = "teams_webhook2_url"
+        name  = "teams-webhook2-url"
+        secret_name = "teams-webhook2-url"
     }
       env {
-        name  = "teams_webhook3_url"
-        secret_name = "teams_webhook3_url"
+        name  = "teams-webhook3-url"
+        secret_name = "teams-webhook3-url"
     }
       env {
-        name  = "teams_webhook4_url"
-        secret_name = "teams_webhook4_url"
+        name  = "teams-webhook4-url"
+        secret_name = "teams-webhook4-url"
     }
     }
   }
