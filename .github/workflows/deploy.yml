@@ -37,7 +37,7 @@ jobs:
           -var="hostname=${{ secrets.HOSTNAME }}" \
           -var="username=${{ secrets.USERNAME }}" \
           -var="password=${{ secrets.PASSWORD }}" \
-          -var="Authorization=${{ secrets.CW_AUTHORIZATION }}" \
+          -var="CW_Authorization=${{ secrets.CW_AUTHORIZATION }}" \
           -var="CW_ClientID=${{ secrets.CW_CLIENTID }}" \
           -var="CLIENT_ID=${{ secrets.CLIENT_ID }}" \
           -var="CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" \
