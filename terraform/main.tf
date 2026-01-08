@@ -344,7 +344,7 @@ resource "azurerm_subnet" "csw_infra_subnet" {
   name                 = "csw-subnet"
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.csw_vnet.name
-  address_prefixes     = ["10.0.0.0/24"]
+  address_prefixes     = ["10.0.0.0/23"]
 }
 
 resource "azurerm_public_ip" "csw_public_ip" {
