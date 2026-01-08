@@ -195,7 +195,6 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     value = var.AZURE_TENANT_ID
   }
 
-  depends_on = [ azurerm_container_app_custom_domain.csw_domain ]
 
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
