@@ -296,4 +296,16 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   }
 }
 
+resource "azurerm_container_app_environment_certificate" "csw_certificate" {
+  name                = "csw-cert"
+  container_app_environment_id = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env.id
+  certificate_blob_base64 = var.ssl_pfx_base64
+  certificate_password   = var.ssl_password
+}
 
+resource "azurerm_container_app_custom_domain" "csw_domain" {
+  name                = "csw-cert-domain"
+  container_app_id   = azurerm_container_app.CSW_LiveStatusMonitor_App.id
+  certificate_binding_type = "SniEnabled"
+  container_app_environment_certificate_id = azurerm_container_app_environment_certificate.csw_certificate.id
+}

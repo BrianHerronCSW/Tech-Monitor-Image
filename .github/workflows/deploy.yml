@@ -60,7 +60,9 @@ jobs:
           -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
           -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
-          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}"
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}" \
+          -var="SSL_PFX_BASE64=${{ secrets.SSL_PFX_BASE64 }}" \
+          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}"
         working-directory: ./terraform
 
   build-and-deploy:
@@ -130,5 +132,7 @@ jobs:
           -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
           -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
-          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}"
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}" \
+          -var="SSL_PFX_BASE64=${{ secrets.SSL_PFX_BASE64 }}" \
+          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}"
         working-directory: ./terraform
