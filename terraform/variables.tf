@@ -112,7 +112,7 @@ variable "SMTP_PORT" {
 }
 
 variable "SMTP_SENDER_EMAIL" {
-  description = "Sender email address for Email sending notifications."
+  description = "Sender email address for Email sending notifications"
   type        = string
   sensitive   = true
   default     = ""
