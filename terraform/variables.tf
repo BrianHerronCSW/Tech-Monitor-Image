@@ -197,3 +197,21 @@ variable "SSL_PASSWORD" {
   type        = string
   sensitive   = true
 }
+
+variable "MICROSOFT_CLIENT_ID" {
+  description = "Microsoft client ID"
+  type = string
+  sensitive = true
+}
+
+variable "AZURE_TENANT_ID" {
+  description = "Azure tenant ID"
+  type = string
+  sensitive = true
+}
+
+variable "MICROSOFT_CLIENT_SECRET" {
+  description = "Microsoft client secret"
+  type = string
+  sensitive = true
+}

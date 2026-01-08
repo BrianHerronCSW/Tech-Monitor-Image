@@ -62,7 +62,10 @@ jobs:
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
           -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}" \
           -var="SSL_PFX_BASE64=${{ secrets.SSL_PFX_BASE64 }}" \
-          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}"
+          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
+          -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
+          -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
         working-directory: ./terraform
 
   build-and-deploy:
@@ -134,5 +137,8 @@ jobs:
           -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
           -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}" \
           -var="SSL_PFX_BASE64=${{ secrets.SSL_PFX_BASE64 }}" \
-          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}"
+          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
+          -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
+          -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
         working-directory: ./terraform

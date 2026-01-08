@@ -24,6 +24,9 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
   log_analytics_workspace_id = azurerm_log_analytics_workspace.CSW_LiveStatusMonitor_LAW.id
+
+  infrastructure_subnet_id = azurerm_subnet.csw_infra_subnet.id
+  internal_load_balancer_enabled = false
 }
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
@@ -177,6 +180,23 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     value = var.SSL_PASSWORD
   }
 
+  secret {
+    name  = "microsoft-auth-secret"
+    value = var.MICROSOFT_CLIENT_SECRET
+  }
+
+  secret {
+    name  = "microsoft-auth-id"
+    value = var.MICROSOFT_CLIENT_ID
+  }
+
+  secret {
+    name  = "azure-tenant-id"
+    value = var.AZURE_TENANT_ID
+  }
+
+  depends_on = [ azurerm_container_app_custom_domain.csw_domain ]
+
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
     username = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_username
@@ -314,6 +334,20 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   }
 }
 
+resource "azurerm_virtual_network" "csw_vnet" {
+  name                = "csw-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+} 
+
+resource "azurerm_subnet" "csw_infra_subnet" {
+  name                 = "csw-subnet"
+  resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  virtual_network_name = azurerm_virtual_network.csw_vnet.name
+  address_prefixes     = ["10.0.0.0/24"]
+}
+
 resource "azurerm_public_ip" "csw_public_ip" {
   name                = "csw-public-ip"
   location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
@@ -332,6 +366,11 @@ resource "azurerm_nat_gateway" "csw_nat_gateway" {
 resource "azurerm_nat_gateway_public_ip_association" "csw_nat_gateway_ip_assoc" {
   nat_gateway_id = azurerm_nat_gateway.csw_nat_gateway.id
   public_ip_address_id = azurerm_public_ip.csw_public_ip.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "name" {
+  subnet_id = azurerm_subnet.csw_infra_subnet.id
+  nat_gateway_id = azurerm_nat_gateway.csw_nat_gateway.id
 }
 
 resource "azurerm_container_app_environment_certificate" "csw_certificate" {
