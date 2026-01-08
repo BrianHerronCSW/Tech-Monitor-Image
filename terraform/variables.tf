@@ -185,3 +185,15 @@ variable "TEAMS_WEBHOOK4_URL" {
   type        = string
   sensitive   = true
 }
+
+variable "SSL_PFX_BASE64" {
+  description = "Base64 encoded SSL PFX certificate."
+  type        = string
+  sensitive   = true
+}
+
+variable "SSL_PASSWORD" {
+  description = "Password for the SSL PFX certificate."
+  type        = string
+  sensitive   = true
+}

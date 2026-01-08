@@ -167,6 +167,16 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     value = var.TEAMS_WEBHOOK4_URL
   }
 
+  secret {
+    name  = "ssl-pfx-base64"
+    value = var.SSL_PFX_BASE64
+  }
+
+  secret {
+    name  = "ssl-password"
+    value = var.SSL_PASSWORD
+  }
+
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
     username = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_username
@@ -182,107 +192,115 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       env {
         name  = "hostname"
         secret_name = "hostname"
-    }
+      }
       env {
         name  = "username"
         secret_name = "username"
-    }
+      }
       env {
         name  = "password"
         secret_name = "password"
-    }
+      }
       env {
         name  = "cw_authorization"
         secret_name = "cw-authorization"
-    }
+      }
       env {
         name  = "cw-client-id"
         secret_name = "cw-client-id"
-    }
+      }
       env {
         name  = "client-id"
         secret_name = "client-id"
-    }
+      }
       env {
         name  = "client-secret"
         secret_name = "client-secret"
-    }
+      }
       env {
         name  = "tenant-id"
         secret_name = "tenant-id"
-    }
+      }
       env {
         name  = "team-id"
         secret_name = "team-id"
-    }
+      }
       env {
         name  = "channel-id"
         secret_name = "channel-id"
-    }
+      }
       env {
         name  = "chat-id"
         secret_name = "chat-id"
-    }
+      }
       env {
         name  = "sender-user-id"
         secret_name = "sender-user-id"
-    }
+      }
       env {
         name  = "sender-display-name"
         secret_name = "sender-display-name"
-    }
+      }
       env {
         name  = "smtp-server"
         secret_name = "smtp-server"
-    }
+      }
       env {
         name  = "smtp-port"
         secret_name = "smtp-port"
-    }
+      }
       env {
         name  = "smtp-user"
         secret_name = "smtp-user"
-    }
+      }
       env {
         name  = "smtp-auth-password"
         secret_name = "smtp-auth-password"
-    }
+      }
       env {
         name  = "recipient-emails"
         secret_name = "recipient-emails"
-    }
+      }
       env {
         name  = "qr-queue"
         secret_name = "qr-queue"
-    }
+      }
       env {
         name  = "qr-start-hour"
         secret_name = "qr-start-hour"
-    }
+      }
       env {
         name  = "qr-end-hour"
         secret_name = "qr-end-hour"
-    }
+      }
       env {
         name  = "techs"
         secret_name = "techs"
-    }
+      }
       env {
         name  = "teams-webhook-url"
         secret_name = "teams-webhook-url"
-    }
+      }
       env {
         name  = "teams-webhook2-url"
         secret_name = "teams-webhook2-url"
-    }
+      }
       env {
         name  = "teams-webhook3-url"
         secret_name = "teams-webhook3-url"
-    }
+      }
       env {
         name  = "teams-webhook4-url"
         secret_name = "teams-webhook4-url"
-    }
+      }
+      env {
+        name  = "ssl-pfx-base64"
+        secret_name = "ssl-pfx-base64"
+      }
+      env {
+        name  = "ssl-password"
+        secret_name = "ssl-password"
+      }
     }
   }
   ingress {
@@ -299,8 +317,8 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
 resource "azurerm_container_app_environment_certificate" "csw_certificate" {
   name                = "csw-cert"
   container_app_environment_id = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env.id
-  certificate_blob_base64 = var.ssl_pfx_base64
-  certificate_password   = var.ssl_password
+  certificate_blob_base64 = var.SSL_PFX_BASE64
+  certificate_password   = var.SSL_PASSWORD
 }
 
 resource "azurerm_container_app_custom_domain" "csw_domain" {
