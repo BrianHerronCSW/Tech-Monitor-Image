@@ -28,7 +28,7 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
   infrastructure_subnet_id = azurerm_subnet.CSW_LiveStatusMonitor_Subnet.id
 
   workload_profile {
-    name       = "consumption-profile"
+    name       = "d4"
     workload_profile_type = "D4"
   }
 
@@ -100,7 +100,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   revision_mode = "Single"
 
-  workload_profile_name = "consumption-profile"
+  workload_profile_name = "d4"
 
   timeouts {
     create = "180m"
