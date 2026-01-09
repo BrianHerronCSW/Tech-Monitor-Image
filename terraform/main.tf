@@ -35,6 +35,10 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   revision_mode = "Single"
 
+  timeouts {
+    create = "60m"
+  }
+
   secret {
     name  = "acr-password"
     value = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_password
