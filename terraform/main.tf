@@ -435,6 +435,24 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
         name = "relay-endpoint"
         value = "${azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name}.servicebus.windows.net"
       }
+      env {
+        name = "pbx-ip"
+        value = "127.0.0.1"
+      }
+    }
+    container {
+      name = "relay-bridge"
+      memory = "0.5Gi"
+      cpu    = "0.25"
+      image = "ghcr.io/m-pavel/azure-relay-bridge:latest"
+      env {
+        name  = "RELAY_CONNECTION_STRING"
+        value = azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string
+      }
+      env {
+        name = "RELAY_BRIDGE_PARAMS"
+        value = "client 5038:${azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name}"
+      }
     }
   }
   ingress {
