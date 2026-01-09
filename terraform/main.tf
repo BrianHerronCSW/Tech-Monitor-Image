@@ -25,18 +25,78 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
   log_analytics_workspace_id = azurerm_log_analytics_workspace.CSW_LiveStatusMonitor_LAW.id
+  infrastructure_subnet_id = azurerm_subnet.CSW_LiveStatusMonitor_Subnet.id
 
+  workload_profile {
+    name       = "consumption-profile"
+    workload_profile_type = "Consumption"
+  }
 
   timeouts {
     create = "180m"
   }
 }
 
+resource "azurerm_virtual_network" "CSW_LiveStatusMonitor_VNet" {
+  name                = "CSW-LiveStatusMonitor-VNet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+}
+
+resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
+  name                 = "CSW-LiveStatusMonitor-Subnet"
+  resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
+  address_prefixes     = ["10.0.0.0/23"]
+  delegation {
+    name = "delegation"
+
+    service_delegation {
+      name = "Microsoft.App/managedEnvironments"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+      ]
+    }
+  }
+}
+
+resource "azurerm_public_ip" "CSW_LiveStatusMonitor_PublicIP" {
+  name                = "CSW-LiveStatusMonitor-PublicIP"
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_nat_gateway" "CSW_LiveStatusMonitor_NATGW" {
+  name                = "CSW-LiveStatusMonitor-NATGW"
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  sku_name            = "Standard"
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "CSW_LiveStatusMonitor_NATGW_PublicIP_Assoc" {
+  nat_gateway_id = azurerm_nat_gateway.CSW_LiveStatusMonitor_NATGW.id
+  public_ip_address_id = azurerm_public_ip.CSW_LiveStatusMonitor_PublicIP.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "CSW_LiveStatusMonitor_Subnet_NATGW_Assoc" {
+  subnet_id      = azurerm_subnet.CSW_LiveStatusMonitor_Subnet.id
+  nat_gateway_id = azurerm_nat_gateway.CSW_LiveStatusMonitor_NATGW.id
+
+  depends_on = [ azurerm_container_app_environment.CSW_LiveStatusMonitor_Env ]
+}
+
+
+
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   name                = "csw-livestatusmonitor-app"
   container_app_environment_id = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env.id
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   revision_mode = "Single"
+
+  workload_profile_name = "consumption-profile"
 
   timeouts {
     create = "180m"

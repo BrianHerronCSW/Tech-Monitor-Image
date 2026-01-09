@@ -85,7 +85,7 @@ jobs:
         az acr login --name ${{ env.ACR_NAME }}
         docker build -t ${{ env.ACR_NAME }}.azurecr.io/tech-status-monitor:${{ github.run_id }} .
         docker push ${{ env.ACR_NAME }}.azurecr.io/tech-status-monitor:${{ github.run_id }}
-
+        
   terraform-deploy:
     needs: build-and-deploy
     runs-on: ubuntu-latest
@@ -104,8 +104,50 @@ jobs:
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
-  
-      - name: Terraform Apply
+      
+      - name: Terraform Apply Part 1 LOL
+        run: |
+          terraform apply -auto-approve \
+          -target=azurerm_container_app_environment.CSW_LiveStatusMonitor_Env \
+          -var="container_image_tag=${{ github.run_id }}" \
+          -var="hostname=${{ secrets.HOSTNAME }}" \
+          -var="username=${{ secrets.USERNAME }}" \
+          -var="password=${{ secrets.PASSWORD }}" \
+          -var="CW_Authorization=${{ secrets.CW_AUTHORIZATION }}" \
+          -var="CW_ClientID=${{ secrets.CW_CLIENTID }}" \
+          -var="CLIENT_ID=${{ secrets.CLIENT_ID }}" \
+          -var="CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" \
+          -var="TENANT_ID=${{ secrets.TENANT_ID }}" \
+          -var="TEAM_ID=${{ secrets.TEAM_ID }}" \
+          -var="CHANNEL_ID=${{ secrets.CHANNEL_ID }}" \
+          -var="CHAT_ID=${{ secrets.CHAT_ID }}" \
+          -var="SENDER_USER_ID=${{ secrets.SENDER_USER_ID }}" \
+          -var="SENDER_DISPLAY_NAME=${{ secrets.SENDER_DISPLAY_NAME }}" \
+          -var="SMTP_SERVER=${{ secrets.SMTP_SERVER }}" \
+          -var="SMTP_PORT=${{ secrets.SMTP_PORT }}" \
+          -var="SMTP_USER=${{ secrets.SMTP_USER }}" \
+          -var="SMTP_SENDER_EMAIL=${{ secrets.SMTP_SENDER_EMAIL }}" \
+          -var="SMTP_AUTH_PASSWORD=${{ secrets.SMTP_AUTH_PASSWORD }}" \
+          -var="recipient_emails=${{ secrets.RECIPIENT_EMAILS }}" \
+          -var="QR_QUEUE=${{ secrets.QR_QUEUE }}" \
+          -var="QR_START_HOUR=${{ secrets.QR_START_HOUR }}" \
+          -var="QR_END_HOUR=${{ secrets.QR_END_HOUR }}" \
+          -var="techs=${{ secrets.TECHS }}" \
+          -var="TEAMS_WEBHOOK_URL=${{ secrets.TEAMS_WEBHOOK_URL }}" \
+          -var="TEAMS_WEBHOOK2_URL=${{ secrets.TEAMS_WEBHOOK2_URL }}" \
+          -var="TEAMS_WEBHOOK3_URL=${{ secrets.TEAMS_WEBHOOK3_URL }}" \
+          -var="TEAMS_WEBHOOK4_URL=${{ secrets.TEAMS_WEBHOOK4_URL }}" \
+          -var="SSL_PFX_BASE64=${{ secrets.SSL_PFX_BASE64 }}" \
+          -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
+          -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
+          -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+        working-directory: ./terraform
+
+      - name: I put wait here to things can sync I hope it works
+        run: sleep 60
+
+      - name: Terraform Apply Part 2 UwU
         run: |
           terraform apply -auto-approve \
           -var="container_image_tag=${{ github.run_id }}" \
