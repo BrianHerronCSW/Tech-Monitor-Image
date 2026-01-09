@@ -106,7 +106,7 @@ resource "azurerm_relay_hybrid_connection" "CSW_LiveStatusMonitor_HybridConnecti
   relay_namespace_name      = azurerm_relay_namespace.CSW_LiveStatusMonitor_RelayNS.name
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   requires_client_authorization = false
-  user_metadata      = jsoncode([
+  user_metadata      = jsonencode([
     {
       key = "endpoint"
       value = "10.0.100.10:5038"
