@@ -94,7 +94,36 @@ resource "azurerm_subnet_nat_gateway_association" "CSW_LiveStatusMonitor_Subnet_
   depends_on = [ azurerm_container_app_environment.CSW_LiveStatusMonitor_Env ]
 }
 
+resource "azurerm_relay_namespace" "CSW_LiveStatusMonitor_RelayNS" {
+  name                = "csw-livestatusmonitor-relayns"
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  sku_name                 = "Standard"
+}
 
+resource "azurerm_relay_hybrid_connection" "CSW_LiveStatusMonitor_HybridConnection" {
+  name                = "csw-livestatusmonitor-hc"
+  relay_namespace_name      = azurerm_relay_namespace.CSW_LiveStatusMonitor_RelayNS.name
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  requires_client_authorization = false
+  user_metadata      = jsoncode([
+    {
+      key = "endpoint"
+      value = "10.0.100.10:5038"
+    }
+  ])
+}
+
+resource "azurerm_relay_hybrid_connection_authorization_rule" "CSW_LiveStatusMonitor_HC_AuthRule" {
+  name                = "csw-livestatusmonitor-hc-authrule"
+  namespace_name      = azurerm_relay_namespace.CSW_LiveStatusMonitor_RelayNS.name
+  hybrid_connection_name = azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+
+  listen = false
+  send   = true
+  manage = false
+}
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
   name                = "csw-livestatusmonitor-app"
@@ -268,6 +297,11 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     value = var.AZURE_TENANT_ID
   }
 
+  secret {
+    name = "relay-connection-string"
+    value = azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string
+  }
+
 
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
@@ -392,6 +426,14 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       env {
         name  = "ssl-password"
         secret_name = "ssl-password"
+      }
+      env {
+        name = "relay-connection-string"
+        secret_name = "relay-connection-string"
+      }
+      env {
+        name = "relay-endpoint"
+        value = "${azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name}.servicebus.windows.net"
       }
     }
   }
