@@ -419,5 +419,9 @@ resource "azurerm_container_app_custom_domain" "csw_domain" {
   container_app_id   = azurerm_container_app.CSW_LiveStatusMonitor_App.id
   certificate_binding_type = "SniEnabled"
   container_app_environment_certificate_id = azurerm_container_app_environment_certificate.csw_certificate.id
+
+  depends_on = [ 
+    azurerm_container_app.CSW_LiveStatusMonitor_App 
+  ]
 }
 
