@@ -108,6 +108,7 @@ jobs:
       - name: Terraform Apply Part 1 LOL
         run: |
           terraform apply -auto-approve \
+          -refresh=false \
           -target=azurerm_container_app_environment.CSW_LiveStatusMonitor_Env \
           -var="container_image_tag=${{ github.run_id }}" \
           -var="hostname=${{ secrets.HOSTNAME }}" \
