@@ -120,7 +120,7 @@ resource "azurerm_relay_hybrid_connection_authorization_rule" "CSW_LiveStatusMon
   hybrid_connection_name = azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
 
-  listen = false
+  listen = true
   send   = true
   manage = false
 }
