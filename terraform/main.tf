@@ -29,7 +29,11 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
 
   workload_profile {
     name       = "consumption-profile"
-    workload_profile_type = "Consumption"
+    workload_profile_type = "Dedicated"
+  }
+
+  lifecycle {
+    ignore_changes = [workload_profile]
   }
 
   timeouts {
