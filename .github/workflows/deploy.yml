@@ -110,6 +110,8 @@ jobs:
           terraform apply -auto-approve \
           -refresh=false \
           -target=azurerm_container_app_environment.CSW_LiveStatusMonitor_Env \
+          -target=azurerm_container_app.CSW_LiveStatusMonitor_App \
+          -target=azurerm_container_app_custom_domain.CSW_LiveStatusMonitor_CustomDomain \
           -var="container_image_tag=${{ github.run_id }}" \
           -var="hostname=${{ secrets.HOSTNAME }}" \
           -var="username=${{ secrets.USERNAME }}" \
