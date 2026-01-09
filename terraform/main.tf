@@ -53,7 +53,7 @@ resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
     name = "delegation"
 
     service_delegation {
-      name = "Microsoft.App/managedEnvironments"
+      name = "Microsoft.App/environments"
       actions = [
         "Microsoft.Network/virtualNetworks/subnets/join/action",
       ]
