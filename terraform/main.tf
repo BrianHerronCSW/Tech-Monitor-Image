@@ -451,7 +451,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       }
       env {
         name = "RELAY_BRIDGE_PARAMS"
-        value = "client 5038:csw-livestatusmonitor-hc"
+        value = "-L 127.0.0.1:5038:csw-livestatusmonitor-hc"
       }
     }
   }
