@@ -30,6 +30,8 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
   workload_profile {
     name       = "d4"
     workload_profile_type = "D4"
+    minimum_count = 1
+    maximum_count = 5
   }
 
   lifecycle {
