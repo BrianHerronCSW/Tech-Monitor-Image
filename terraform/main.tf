@@ -446,7 +446,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       cpu    = "0.25"
       image = "ghcr.io/m-pavel/azure-relay-bridge:latest"
       env {
-        name  = "RELAY_CONNECTION_STRING"
+        name  = "AZURE_RELAY_CONNECTION_STRING"
         value = azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string
       }
       env {
