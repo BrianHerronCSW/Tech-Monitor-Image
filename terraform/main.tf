@@ -445,14 +445,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       memory = "0.5Gi"
       cpu    = "0.25"
       image = "mcr.microsoft.com/azure-relay-bridge:latest"
-      env {
-        name  = "AZURE_RELAY_CONNECTION_STRING"
-        value = azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string
-      }
-      env {
-        name = "RELAY_BRIDGE_PARAMS"
-        value = "-L 127.0.0.1:5038:csw-livestatusmonitor-hc"
-      }
+      command = ["azbridge", "-L", "127.0.0.1:5038:csw-livestatusmonitor-hc", "-x", azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string]
     }
   }
   ingress {
