@@ -29,7 +29,7 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
 
   workload_profile {
     name       = "consumption-profile"
-    workload_profile_type = "Dedicated"
+    workload_profile_type = "D4"
   }
 
   lifecycle {
