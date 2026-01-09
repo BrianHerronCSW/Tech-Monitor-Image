@@ -67,6 +67,10 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
 
   infrastructure_subnet_id = azurerm_subnet.csw_infra_subnet.id
   internal_load_balancer_enabled = false
+
+  timeouts {
+    create = "60m"
+  }
 }
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
