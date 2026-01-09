@@ -389,3 +389,8 @@ resource "azurerm_container_app_custom_domain" "csw_domain" {
   certificate_binding_type = "SniEnabled"
   container_app_environment_certificate_id = azurerm_container_app_environment_certificate.csw_certificate.id
 }
+
+import {
+  to = azurerm_container_app_environment.CSW_LiveStatusMonitor_Env
+  id = "/subscriptions/95c7d702-da3a-4253-a6e9-aa9e7f2dd5ca/resourceGroups/CSW-LiveStatusMonitor-RG/providers/Microsoft.App/managedEnvironments/CSW-LiveStatusMonitor-Env"
+}
