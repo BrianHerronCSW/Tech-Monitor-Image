@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+from gevent import monkey
+monkey.patch_all()
 import asyncio
 from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
@@ -7,6 +8,7 @@ from functools import wraps
 from getpass import getpass
 from panoramisk import Manager
 from werkzeug.middleware.proxy_fix import ProxyFix
+import sys
 import pymsteams
 import os
 import requests
@@ -48,6 +50,16 @@ REAL_TIME_DATA = {
 
 
 ACTIVE_CALL_CW_CACHE = {}
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout) # This forces logs to the container stream
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 
 
