@@ -65,6 +65,9 @@ resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
       ]
     }
   }
+  depends_on = [ 
+    azurerm_virtual_network.CSW_LiveStatusMonitor_VNet
+   ]
 }
 
 resource "azurerm_subnet" "CSW_GatewaySubnet" {
@@ -72,6 +75,9 @@ resource "azurerm_subnet" "CSW_GatewaySubnet" {
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
   address_prefixes     = ["10.10.2.0/24"]
+  depends_on = [ 
+    azurerm_virtual_network.CSW_LiveStatusMonitor_VNet
+   ]
 }
 
 resource "azurerm_local_network_gateway" "CSW_OnPrem_LNG" {
