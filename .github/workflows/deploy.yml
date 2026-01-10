@@ -65,7 +65,10 @@ jobs:
           -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
           -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
           -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
-          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" \
+          -var="ONPREM_GATEWAY_IP=${{ secrets.ONPREM_GATEWAY_IP }}" \
+          -var="ONPREM_ADDRESS_SPACE=${{ secrets.ONPREM_ADDRESS_SPACE }}" \
+          -var="VPN_SHARED_KEY=${{ secrets.VPN_SHARED_KEY }}"
         working-directory: ./terraform
 
   build-and-deploy:
@@ -145,7 +148,10 @@ jobs:
           -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
           -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
           -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
-          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" \
+          -var="ONPREM_GATEWAY_IP=${{ secrets.ONPREM_GATEWAY_IP }}" \
+          -var="ONPREM_ADDRESS_SPACE=${{ secrets.ONPREM_ADDRESS_SPACE }}" \
+          -var="VPN_SHARED_KEY=${{ secrets.VPN_SHARED_KEY }}"
         working-directory: ./terraform
 
       - name: I put wait here to things can sync I hope it works
@@ -186,5 +192,8 @@ jobs:
           -var="SSL_PASSWORD=${{ secrets.SSL_PASSWORD }}" \
           -var="MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}" \
           -var="MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}" \
-          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+          -var="AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" \
+          -var="ONPREM_GATEWAY_IP=${{ secrets.ONPREM_GATEWAY_IP }}" \
+          -var="ONPREM_ADDRESS_SPACE=${{ secrets.ONPREM_ADDRESS_SPACE }}" \
+          -var="VPN_SHARED_KEY=${{ secrets.VPN_SHARED_KEY }}"
         working-directory: ./terraform

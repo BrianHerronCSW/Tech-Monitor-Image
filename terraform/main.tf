@@ -43,86 +43,54 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
   }
 }
 
-resource "azurerm_virtual_network" "CSW_LiveStatusMonitor_VNet" {
-  name                = "CSW-LiveStatusMonitor-VNet"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-}
-
-resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
-  name                 = "CSW-LiveStatusMonitor-Subnet"
+resource "azurerm_subnet" "CSW_GatewaySubnet" {
+  name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
-  address_prefixes     = ["10.0.0.0/23"]
-  delegation {
-    name = "delegation"
+  address_prefixes     = ["10.0.2.0/24"]
+}
 
-    service_delegation {
-      name = "Microsoft.App/environments"
-      actions = [
-        "Microsoft.Network/virtualNetworks/subnets/join/action",
-      ]
-    }
+resource "azurerm_local_network_gateway" "CSW_OnPrem_LNG" {
+  name                = "CSW-OnPrem-LNG"
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  gateway_address     = var.onprem_vpn_gateway_ip
+  address_space       = [var.onprem_address_space]
+}
+
+resource "azurerm_public_ip" "CSW_VPNGW_PublicIP" {
+  name                = "CSW-VPNGW-PublicIP"
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  allocation_method   = "Dynamic"
+  sku                 = "Basic"
+}
+
+resource "azurerm_virtual_network_gateway" "CSW_VPNGW" {
+  name                = "CSW-VPNGW"
+  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  type                = "Vpn"
+  vpn_type            = "RouteBased"
+  active_active       = false
+  enable_bgp         = false
+  sku                 = "VpnGw1"
+  ip_configuration {
+    name                          = "vpngw-ipconfig"
+    public_ip_address_id          = azurerm_public_ip.CSW_VPNGW_PublicIP.id
+    subnet_id                     = azurerm_subnet.CSW_GatewaySubnet.id
   }
 }
 
-resource "azurerm_public_ip" "CSW_LiveStatusMonitor_PublicIP" {
-  name                = "CSW-LiveStatusMonitor-PublicIP"
-  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-resource "azurerm_nat_gateway" "CSW_LiveStatusMonitor_NATGW" {
-  name                = "CSW-LiveStatusMonitor-NATGW"
-  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  sku_name            = "Standard"
-}
-
-resource "azurerm_nat_gateway_public_ip_association" "CSW_LiveStatusMonitor_NATGW_PublicIP_Assoc" {
-  nat_gateway_id = azurerm_nat_gateway.CSW_LiveStatusMonitor_NATGW.id
-  public_ip_address_id = azurerm_public_ip.CSW_LiveStatusMonitor_PublicIP.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "CSW_LiveStatusMonitor_Subnet_NATGW_Assoc" {
-  subnet_id      = azurerm_subnet.CSW_LiveStatusMonitor_Subnet.id
-  nat_gateway_id = azurerm_nat_gateway.CSW_LiveStatusMonitor_NATGW.id
-
-  depends_on = [ azurerm_container_app_environment.CSW_LiveStatusMonitor_Env ]
-}
-
-resource "azurerm_relay_namespace" "CSW_LiveStatusMonitor_RelayNS" {
-  name                = "csw-livestatusmonitor-relayns"
-  location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  sku_name                 = "Standard"
-}
-
-resource "azurerm_relay_hybrid_connection" "CSW_LiveStatusMonitor_HybridConnection" {
-  name                = "csw-livestatusmonitor-hc"
-  relay_namespace_name      = azurerm_relay_namespace.CSW_LiveStatusMonitor_RelayNS.name
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-  requires_client_authorization = false
-  user_metadata      = jsonencode([
-    {
-      key = "endpoint"
-      value = "10.0.100.10:5038"
-    }
-  ])
-}
-
-resource "azurerm_relay_hybrid_connection_authorization_rule" "CSW_LiveStatusMonitor_HC_AuthRule" {
-  name                = "csw-livestatusmonitor-hc-authrule"
-  namespace_name      = azurerm_relay_namespace.CSW_LiveStatusMonitor_RelayNS.name
-  hybrid_connection_name = azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name
-  resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
-
-  listen = true
-  send   = true
-  manage = false
+resource "azurerm_virtual_network_gateway_connection" "CSW_VPN_Connection" {
+  name                           = "CSW-VPN-Connection"
+  location                       = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
+  resource_group_name            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
+  virtual_network_gateway_id     = azurerm_virtual_network_gateway.CSW_VPNGW.id
+  local_network_gateway_id       = azurerm_local_network_gateway.CSW_OnPrem_LNG.id
+  type                = "IPsec"
+  routing_weight                 = 10
+  shared_key                     = var.vpn_shared_key
 }
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
@@ -440,13 +408,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
         value = "127.0.0.1"
       }
     }
-    container {
-      name = "relay-bridge"
-      memory = "0.5Gi"
-      cpu    = "0.25"
-      image = "mcr.microsoft.com/azure-relay-bridge:latest"
-      command = ["azbridge", "-L", "127.0.0.1:5038:csw-livestatusmonitor-hc", "-x", azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string]
-    }
+    
   }
   ingress {
     external_enabled = true
