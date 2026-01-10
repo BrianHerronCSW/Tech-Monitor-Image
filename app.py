@@ -1357,7 +1357,7 @@ def main():
     teams4.text("Starting Asterisk Manager in background thread and Flask web server.")
     teams4.send() 
   except Exception as e:
-    logging.warning(f"WARNING: Initial Teams4 log failed (this is non-critical): {e}")
+    logging.warning(f"WARNING: Initial Teams log failed (this is non-critical): {e}")
   
   threading.Thread(target=run_asterisk_manager_loop, daemon=True).start()
 
