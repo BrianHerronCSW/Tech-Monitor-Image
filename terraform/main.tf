@@ -55,6 +55,16 @@ resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
   address_prefixes     = ["10.0.1.0/24"]
+  delegation {
+    name = "delegation"
+    service_delegation {
+      name = "Microsoft.App/environments"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+        "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action",
+      ]
+    }
+  }
 }
 
 resource "azurerm_subnet" "CSW_GatewaySubnet" {
