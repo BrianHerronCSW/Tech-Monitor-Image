@@ -14,6 +14,7 @@ import smtplib
 import json
 import ssl
 import httpx
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
@@ -87,12 +88,12 @@ json_string = os.getenv("techs")
 if json_string:
     try:
         tech_dict = json.loads(json_string)
-        print("Successfully loaded tech_dict from environment variable.")
+        logging.info("Successfully loaded tech_dict from environment variable.")
     except json.JSONDecodeError as e:
-        print(f"Failed to decode JSON from 'techs' env var: {e}")
+        logging.error(f"Failed to decode JSON from 'techs' env var: {e}")
         tech_dict = {}
 else:
-    print("Environment variable 'techs' is not set. Active call agent names may be 'Unknown'.")
+    logging.warning("Environment variable 'techs' is not set. Active call agent names may be 'Unknown'.")
     tech_dict = {}
 
 
@@ -250,7 +251,7 @@ def getRecentTicket(phoneNumber):
         companyID = str(data[0].get("company", {}).get('id'))
         
     except requests.RequestException as e:
-        print(f"Error getting CW Contact for {phoneNumber}: {e}")
+        logging.error(f"Error getting CW Contact for {phoneNumber}: {e}")
         return '<small>Error fetching contact.</small>'
     except IndexError:
         return None
@@ -271,7 +272,7 @@ def getRecentTicket(phoneNumber):
         else:
             return '<small>No recent ticket.</small>' 
     except requests.RequestException as e:
-        print(f"Error getting CW Ticket for {contactID}: {e}")
+        logging.error(f"Error getting CW Ticket for {contactID}: {e}")
         return '<small>Error fetching ticket.</small>' 
 
 
@@ -290,7 +291,7 @@ async def get_graph_api_token():
 
 
 async def send_urgent_alert(caller_id, minutes, seconds, cid_name):
-    print(f"Attempting to send URGENT alert to group chat for {caller_id}...")
+    logging.info(f"Attempting to send URGENT alert to group chat for {caller_id}...")
     
     teams4.title("Long Hold Time")
     teams4.text(f"Long hold time detected on {QR_QUEUE} queue for {caller_id}. Waiting for {minutes} minutes and {seconds} seconds.")
@@ -374,11 +375,11 @@ async def send_urgent_alert(caller_id, minutes, seconds, cid_name):
             manager.loop.run_in_executor(None, teams4.send)
             
         except httpx.HTTPStatusError as e:
-            print(f"ERROR sending Teams message: {e.response.status_code} - {e.response.text}")
+            logging.error(f"ERROR sending Teams message: {e.response.status_code} - {e.response.text}")
 
 async def send_email_async(html_body, plain_body):
     if not all([SMTP_SERVER, SMTP_SENDER_EMAIL, SENDER_PASSWORD, RECIPIENT_EMAILS]):
-        print("Email configuration is incomplete. Skipping email.")
+        logging.warning("Email configuration is incomplete. Skipping email.")
         return
 
     def email_sender_sync():
@@ -389,46 +390,46 @@ async def send_email_async(html_body, plain_body):
             msg['To'] = RECIPIENT_EMAILS
             msg.set_content(plain_body)
             msg.add_alternative(html_body, subtype='html')
-            print("Email message created successfully.")
+            logging.info("Email message created successfully.")
 
         except Exception as e:
-            print(f"Error creating the email message: {e}")
+            logging.error(f"Error creating the email message: {e}")
             return 
 
         server = None
         try:
-            print(f"Connecting to SMTP server at {SMTP_SERVER}:{SMTP_PORT}...")
+            logging.info(f"Connecting to SMTP server at {SMTP_SERVER}:{SMTP_PORT}...")
             if SMTP_PORT == 465:
-                print("Establishing a direct SSL connection...")
+                logging.info("Establishing a direct SSL connection...")
                 server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
             else:
                 server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-                print("Securing connection with STARTTLS...")
+                logging.info("Securing connection with STARTTLS...")
                 server.starttls()
-            print("Connection established.")
+            logging.info("Connection established.")
 
             if SMTP_USER and SENDER_PASSWORD:
-                print(f"Logging in as {SMTP_USER}...")
+                logging.info(f"Logging in as {SMTP_USER}...")
                 server.login(SMTP_USER, SENDER_PASSWORD)
-                print("Logged in successfully.")
+                logging.info("Logged in successfully.")
             else:
-                print("Skipping login as no user or password was provided.")
+                logging.info("Skipping login as no user or password was provided.")
             
-            print(f"Sending email to {RECIPIENT_EMAILS} from {SMTP_SENDER_EMAIL}...")
+            logging.info(f"Sending email to {RECIPIENT_EMAILS} from {SMTP_SENDER_EMAIL}...")
             server.send_message(msg)
-            print("✅ Email sent successfully!")
+            logging.info("✅ Email sent successfully!")
 
         except smtplib.SMTPAuthenticationError as e:
-            print(f"❌ Authentication failed for user {SMTP_USER}. Please check credentials. Server says: {e}")
+            logging.error(f"❌ Authentication failed for user {SMTP_USER}. Please check credentials. Server says: {e}")
         except ConnectionRefusedError:
-            print(f"❌ Connection refused. Is the SMTP server address '{SMTP_SERVER}' and port '{SMTP_PORT}' correct?")
+            logging.error(f"❌ Connection refused. Is the SMTP server address '{SMTP_SERVER}' and port '{SMTP_PORT}' correct?")
         except smtplib.SMTPConnectError as e:
-            print(f"❌ Failed to connect to the server. Check server address, port, and firewall rules. Error: {e}")
+            logging.error(f"❌ Failed to connect to the server. Check server address, port, and firewall rules. Error: {e}")
         except Exception as e:
-            print(f"❌ An unexpected error occurred: {e}")
+            logging.error(f"❌ An unexpected error occurred: {e}")
         finally:
             if server:
-                print("Closing connection.")
+                logging.info("Closing connection.")
                 server.quit()
 
     await manager.loop.run_in_executor(None, email_sender_sync)
@@ -445,7 +446,7 @@ async def check_queue_periodically():
                 {'Action': 'QueueStatus', 'Queue': QR_QUEUE}
             )
         except Exception as e:
-            print(f"Error checking queue status: {e}")
+            logging.error(f"Error checking queue status: {e}")
             await asyncio.sleep(5)
             continue
             
@@ -482,7 +483,7 @@ async def check_queue_periodically():
                         if cid_name_from_api != "Unknown":
                              cid_name = cid_name_from_api
                     except Exception as e:
-                        print(f"Error fetching CID for {caller_id}: {e}")
+                        logging.error(f"Error fetching CID for {caller_id}: {e}")
 
 
                 current_calls_data.append({
@@ -494,7 +495,7 @@ async def check_queue_periodically():
                 
 
                 if wait_time_minutes >= 4 and caller_id not in alerted_calls:
-                    print(f"Wait time for {caller_id} is {wait_time_minutes}m. Triggering urgent alert.")
+                    logging.info(f"Wait time for {caller_id} is {wait_time_minutes}m. Triggering urgent alert.")
                     await send_urgent_alert(caller_id, wait_time_minutes, wait_time_remaining_seconds, cid_name)
                     alerted_calls.append(caller_id)
         
@@ -546,7 +547,7 @@ async def update_channel_states_periodically():
                 'Action': 'CoreShowChannels'
             })
         except Exception as e:
-            print(f"Error fetching CoreShowChannels: {e}")
+            logging.error(f"Error fetching CoreShowChannels: {e}")
             await asyncio.sleep(10)
             continue
             
@@ -634,7 +635,7 @@ async def update_channel_states_periodically():
                             if connected_line_num and extract_cid_base(connected_line_num) in tech_dict:
                                 agent_name = tech_dict.get(extract_cid_base(connected_line_num), agent_name)
                             
-                            print(f"Call {caller_uniqueid} unparked and assigned to: {agent_name}")
+                            logging.info(f"Call {caller_uniqueid} unparked and assigned to: {agent_name}")
 
                         call_states[caller_uniqueid] = {"status": "answered", "agent": agent_name}
 
@@ -733,11 +734,11 @@ async def update_channel_states_periodically():
                             "duration_seconds": duration_sec
                         })
                     except Exception as e:
-                        print(f"Error processing parked call: {e}")
+                        logging.error(f"Error processing parked call: {e}")
                         continue
 
             except Exception as channel_error:
-                print(f"Skipping channel {channel_id} due to processing error: {channel_error}")
+                logging.error(f"Skipping channel {channel_id} due to processing error: {channel_error}")
                 continue 
 
         keys_to_delete = [
@@ -913,7 +914,7 @@ async def AgentConnect(manager, message):
     
     daily_call_counts[agent_name] = daily_call_counts.get(agent_name, 0) + 1
     hourly_call_counts[agent_name] = hourly_call_counts.get(agent_name, 0) + 1
-    print(daily_call_counts)
+    logging.info(daily_call_counts)
     teams4.title("Agent Connect Event Fired")
     teams4.text(f"Call {call_id} was answered by {agent_name}. Call counts incremented.")
     manager.loop.run_in_executor(None, teams4.send)
@@ -959,15 +960,15 @@ async def CallLeave(manager, message):
   
   call_id = message.get("Uniqueid")
   await asyncio.sleep(1.5) 
-  print(f"{call_map[call_id] if call_id in call_map else 'No call data found for this Call ID.'}")
+  logging.info(f"{call_map[call_id] if call_id in call_map else 'No call data found for this Call ID.'}")
   abandoned_caller_data = call_map.pop(call_id, {"caller_id": "Unknown", "number": "Unknown", "raw_number": "Unknown"})
   caller_id = abandoned_caller_data["caller_id"]
   phone_number = abandoned_caller_data["number"]
   
-  print(f"Processing CallLeave for Call ID: {call_id}, Caller ID: {caller_id}, Phone Number: {phone_number}")
+  logging.info(f"Processing CallLeave for Call ID: {call_id}, Caller ID: {caller_id}, Phone Number: {phone_number}")
   raw_caller_num = message.get("CallerIDNum", "Unknown")
   raw_number_from_map = abandoned_caller_data.get("raw_number", "Unknown")
-  print(f"Raw Caller Number from Message: {raw_caller_num}")
+  logging.info(f"Raw Caller Number from Message: {raw_caller_num}")
     
   if caller_id == "Unknown" and (phone_number == "Unknown" or phone_number == ""):
     final_number = raw_number_from_map if raw_number_from_map != "Unknown" else raw_caller_num
@@ -976,7 +977,7 @@ async def CallLeave(manager, message):
       phone_number = final_number
       caller_id = phone_number # Use the phone number as the temporary ID/name
     
-  print(f"Final Caller ID: {caller_id}, Phone Number: {phone_number}")
+  logging.info(f"Final Caller ID: {caller_id}, Phone Number: {phone_number}")
   wait_duration = datetime.now() - call_join_times.pop(call_id, datetime.now())
   wait_time_seconds = wait_duration.total_seconds()
   hourly_wait_times.append(wait_time_seconds)
@@ -1054,7 +1055,7 @@ async def Hangup(manager, message):
       AGENT_TOTAL_TALK_TIME[agent_name] = AGENT_TOTAL_TALK_TIME.get(agent_name, 0) + duration
       daily_call_counts[agent_name] = daily_call_counts.get(agent_name, 0) + 1
       hourly_call_counts[agent_name] = hourly_call_counts.get(agent_name, 0) + 1
-      print(f"Logged {duration}s talk time for {agent_name}. Call count incremented.")
+      logging.info(f"Logged {duration}s talk time for {agent_name}. Call count incremented.")
   
   await asyncio.sleep(2)
       
@@ -1065,11 +1066,11 @@ async def Hangup(manager, message):
       pass
   
 
-  print(f"Hangup processing for Call ID: {call_map[call_id] if call_id in call_map else 'No call data found for this Call ID.'}")
+  logging.info(f"Hangup processing for Call ID: {call_map[call_id] if call_id in call_map else 'No call data found for this Call ID.'}")
   if call_id in call_map:
     try:
       del call_map[call_id]
-      print(f"Cleaned up call_map for hung-up call: {call_id}")
+      logging.info(f"Cleaned up call_map for hung-up call: {call_id}")
     except KeyError:
       pass
   
@@ -1091,7 +1092,7 @@ async def CallJoin(manager, message):
     caller_id = "Unknown"
     
   raw_caller_id_from_ami = message.get("CallerIDNum", "Unknown")
-  print(raw_caller_id_from_ami)
+  logging.info(raw_caller_id_from_ami)
   if call_id:
     call_states[call_id] = {"status": "waiting", "agent": None}
   
@@ -1146,8 +1147,8 @@ async def CallJoin(manager, message):
   teams.text(msg)
   teams.color("00FF00") 
   manager.loop.run_in_executor(None, teams.send)
-  print(caller_id)
-  print(raw_caller_id_from_ami)
+  logging.info(caller_id)
+  logging.info(raw_caller_id_from_ami)
   call_map[call_id] = {
         "caller_id" : callName, 
         "number" : caller_id,
@@ -1199,8 +1200,8 @@ async def Voicemail_Left(manager, message):
         'Action': 'MailboxStatus',
         'Mailbox': '199@default'
       })
-  print(response)
-  print(message)
+  logging.info(response)
+  logging.info(message)
 
 
 async def logCurrentQueueinfo():
@@ -1301,7 +1302,7 @@ def stream():
         yield f"data:{data_dump}\n\n"
         time.sleep(1)
       except (GeneratorExit, Exception) as e:
-            print(f"SSE Client disconnected or error: {e}")
+            logging.info(f"SSE Client disconnected or error: {e}")
             break
 
   return Response(generate(), mimetype="text/event-stream")
@@ -1344,7 +1345,7 @@ def main():
     teams4.text("Starting Asterisk Manager in background thread and Flask web server.")
     teams4.send() 
   except Exception as e:
-    print(f"WARNING: Initial Teams4 log failed (this is non-critical): {e}")
+    logging.warning(f"WARNING: Initial Teams4 log failed (this is non-critical): {e}")
   
   threading.Thread(target=run_asterisk_manager_loop, daemon=True).start()
 
