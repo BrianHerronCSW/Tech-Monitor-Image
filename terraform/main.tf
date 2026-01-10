@@ -54,7 +54,7 @@ resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
   name                 = "CSW-LiveStatusMonitor-Subnet"
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
-  address_prefixes     = ["10.10.1.0/24"]
+  address_prefixes     = ["10.10.0.0/23"]
   delegation {
     name = "delegation"
     service_delegation {
@@ -125,6 +125,19 @@ resource "azurerm_virtual_network_gateway_connection" "CSW_VPN_Connection" {
   type                = "IPsec"
   routing_weight                 = 10
   shared_key                     = var.VPN_SHARED_KEY
+
+  ipsec_policy {
+    pfs_group = "PFS2"
+    ipsec_encryption = "AES256"
+    ipsec_integrity = "SHA256"
+    sa_lifetime = 3600
+
+    ike_encryption = "AES256"
+    ike_integrity = "SHA256"
+    dh_group = "DHGroup2"
+
+  }
+  use_policy_based_traffic_selectors = false
 }
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
