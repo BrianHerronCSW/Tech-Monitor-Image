@@ -216,19 +216,19 @@ variable "MICROSOFT_CLIENT_SECRET" {
   sensitive = true
 }
 
-variable "onprem_vpn_gateway_ip" {
+variable "ONPREM_GATEWAY_IP" {
   description = "onprem ip for vpn gateway"
   type = string
   sensitive = true
 }
 
-variable "onprem_address_space" {
+variable "ONPREM_ADDRESS_SPACE" {
   description = "onprem address space for vpn gateway"
   type = string
   sensitive = true
 }
 
-variable "vpn_shared_key" {
+variable "VPN_SHARED_KEY" {
   description = "vpn shared key for vpn gateway"
   type = string
   sensitive = true

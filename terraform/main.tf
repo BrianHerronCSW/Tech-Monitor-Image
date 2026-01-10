@@ -54,8 +54,8 @@ resource "azurerm_local_network_gateway" "CSW_OnPrem_LNG" {
   name                = "CSW-OnPrem-LNG"
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
-  gateway_address     = var.onprem_vpn_gateway_ip
-  address_space       = [var.onprem_address_space]
+  gateway_address     = var.ONPREM_GATEWAY_IP
+  address_space       = [var.ONPREM_ADDRESS_SPACE]
 }
 
 resource "azurerm_public_ip" "CSW_VPNGW_PublicIP" {
@@ -90,7 +90,7 @@ resource "azurerm_virtual_network_gateway_connection" "CSW_VPN_Connection" {
   local_network_gateway_id       = azurerm_local_network_gateway.CSW_OnPrem_LNG.id
   type                = "IPsec"
   routing_weight                 = 10
-  shared_key                     = var.vpn_shared_key
+  shared_key                     = var.VPN_SHARED_KEY
 }
 
 resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
@@ -402,10 +402,6 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       env {
         name = "relay-endpoint"
         value = "${azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name}.servicebus.windows.net"
-      }
-      env {
-        name = "pbx-ip"
-        value = "127.0.0.1"
       }
     }
     
