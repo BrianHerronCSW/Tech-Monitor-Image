@@ -279,12 +279,6 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
     value = var.AZURE_TENANT_ID
   }
 
-  secret {
-    name = "relay-connection-string"
-    value = azurerm_relay_hybrid_connection_authorization_rule.CSW_LiveStatusMonitor_HC_AuthRule.primary_connection_string
-  }
-
-
   registry {
     server   = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.login_server
     username = azurerm_container_registry.CSW_LiveStatusMonitor_ACR.admin_username
@@ -408,14 +402,6 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
       env {
         name  = "ssl-password"
         secret_name = "ssl-password"
-      }
-      env {
-        name = "relay-connection-string"
-        secret_name = "relay-connection-string"
-      }
-      env {
-        name = "relay-endpoint"
-        value = "${azurerm_relay_hybrid_connection.CSW_LiveStatusMonitor_HybridConnection.name}.servicebus.windows.net"
       }
     }
     
