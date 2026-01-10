@@ -123,7 +123,7 @@ resource "azurerm_virtual_network_gateway_connection" "CSW_VPN_Connection" {
   virtual_network_gateway_id     = azurerm_virtual_network_gateway.CSW_VPNGW.id
   local_network_gateway_id       = azurerm_local_network_gateway.CSW_OnPrem_LNG.id
   type                = "IPsec"
-  routing_weight                 = 10
+  routing_weight                 = 9
   shared_key                     = var.VPN_SHARED_KEY
 
   ipsec_policy {
