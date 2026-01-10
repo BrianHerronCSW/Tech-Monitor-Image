@@ -1300,9 +1300,9 @@ def stream():
         data_dump = json.dumps(REAL_TIME_DATA)
         yield f"data:{data_dump}\n\n"
         time.sleep(1)
-      except Exception as e:
-        print(f"Error in SSE generate loop: {e}")
-        time.sleep(1) 
+      except (GeneratorExit, Exception) as e:
+            print(f"SSE Client disconnected or error: {e}")
+            break
 
   return Response(generate(), mimetype="text/event-stream")
 

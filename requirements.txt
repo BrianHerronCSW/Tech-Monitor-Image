@@ -8,3 +8,4 @@ eventlet
 httpx
 gunicorn
 werkzeug
+gevent
