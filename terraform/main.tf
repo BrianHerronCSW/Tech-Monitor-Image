@@ -45,7 +45,7 @@ resource "azurerm_container_app_environment" "CSW_LiveStatusMonitor_Env" {
 
 resource "azurerm_virtual_network" "CSW_LiveStatusMonitor_VNet" {
   name                = "CSW-LiveStatusMonitor-VNet"
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.CSW_LiveStatusMonitor_RG.location
   resource_group_name = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
 }
@@ -54,7 +54,7 @@ resource "azurerm_subnet" "CSW_LiveStatusMonitor_Subnet" {
   name                 = "CSW-LiveStatusMonitor-Subnet"
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = ["10.10.1.0/24"]
   delegation {
     name = "delegation"
     service_delegation {
@@ -71,7 +71,7 @@ resource "azurerm_subnet" "CSW_GatewaySubnet" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.CSW_LiveStatusMonitor_RG.name
   virtual_network_name = azurerm_virtual_network.CSW_LiveStatusMonitor_VNet.name
-  address_prefixes     = ["10.0.2.0/24"]
+  address_prefixes     = ["10.10.2.0/24"]
 }
 
 resource "azurerm_local_network_gateway" "CSW_OnPrem_LNG" {
@@ -103,6 +103,10 @@ resource "azurerm_virtual_network_gateway" "CSW_VPNGW" {
     name                          = "vpngw-ipconfig"
     public_ip_address_id          = azurerm_public_ip.CSW_VPNGW_PublicIP.id
     subnet_id                     = azurerm_subnet.CSW_GatewaySubnet.id
+  }
+
+  timeouts {
+    create = "180m"
   }
 }
 
