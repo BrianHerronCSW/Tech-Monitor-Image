@@ -96,6 +96,11 @@ QR_START_HOUR = int(os.getenv("QR-START-HOUR", 7))
 QR_END_HOUR = int(os.getenv("QR-END-HOUR", 18))
 
 
+logging.info(f"PBX IP: {HOST}")
+logging.info(f"Using Connectwise Auth: {Auth[:10]}...[REDACTED]")
+logging.info(f"Using Connectwise Client ID: {ClientID}")
+
+
 json_string = os.getenv("techs")
 if json_string:
     try:
