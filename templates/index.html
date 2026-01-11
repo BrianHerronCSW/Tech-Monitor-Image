@@ -25,6 +25,91 @@
         --soft-border: #333333;
     }
 
+    /* --- SPLASH PAGE STYLES --- */
+    #splash-page {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #1f1f1f;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.8s ease, visibility 0.8s;
+    }
+
+    .splash-content {
+        text-align: center;
+        max-width: 500px;
+        padding: 20px;
+    }
+
+    .splash-logo {
+        height: 100px;
+        margin-bottom: 30px;
+        animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    .splash-text {
+        color: #90caf9;
+        font-weight: 300;
+        letter-spacing: 2px;
+        margin-top: 25px;
+        text-transform: uppercase;
+        font-size: 1.1em;
+    }
+
+    .loader {
+        border: 4px solid #333333;
+        border-top: 4px solid var(--primary-accent);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Update Field Styling */
+    #splash-update-field {
+        margin-top: 40px;
+        padding: 15px;
+        background: #2b2b2b;
+        border-left: 4px solid var(--primary-accent);
+        border-radius: 4px;
+        color: #aaaaaa;
+        font-size: 0.95em;
+        line-height: 1.5;
+        text-align: left;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    #splash-update-field strong {
+        color: #90caf9;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.8em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+    }
+
+    .fade-out {
+        opacity: 0;
+        visibility: hidden;
+    }
+
     /* Scrollbar Styling */
     ::-webkit-scrollbar {
         width: 8px;
@@ -316,6 +401,25 @@
 </head>
 <body>
 
+<!-- START SPLASH PAGE -->
+<div id="splash-page">
+    <div class="splash-content">
+        <img src="/static/capstone_works_logo.png" alt="Capstone Works Logo" class="splash-logo" onerror="this.style.display='none'">
+        <div class="loader"></div>
+        <h2 class="splash-text">Initializing CSW Live Status Monitor...</h2>
+        
+        <!-- MESSAGE FIELD FOR UPDATES -->
+        <div id="splash-update-field">
+            <strong>System Getting Ready:</strong>
+            Switching to Azure-integrated deployment. Establishing VPN connection to on-prem Asterisk...
+            
+            <strong>Brian's Updates</strong>
+            I've moved this  live.capstoneworks.com to Azure, it should be more fluid now. ENJOY!!! :D
+        </div>
+    </div>
+</div>
+<!-- END SPLASH PAGE -->
+
 <header class="main-header">
     <h1>📞 Capstone Works Real-Time Call Queue Dashboard</h1>
     
@@ -405,7 +509,6 @@
 </footer>
 
 <script>
-    // Adjust to your local timezone for history logging
     const LOCAL_TIMEZONE = 'America/Chicago'; 
 
     function formatTime(seconds) {
@@ -415,7 +518,6 @@
         return `${minutes}m ${remainingSeconds.toString().padStart(2, '0')}s`;
     }
 
-    // --- NEW: Function to update header clock ---
     function updateHeaderClock() {
         const now = new Date();
         const options = {
@@ -435,7 +537,6 @@
         document.getElementById('real-time-clock').textContent = `${timeStr} ${dateStr}`;
     }
     
-    // --- Function to update footer status ---
     function updateFooterStatus() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', {
@@ -454,14 +555,11 @@
             `Online - Last Update: ${timeStr}, ${dateStr} v1`;
     }
     
-    // Initialize and run the clocks
     setInterval(updateHeaderClock, 1000);
     setInterval(updateFooterStatus, 1000);
     updateHeaderClock();
     updateFooterStatus();
     
-    
-    // --- MODIFIED: Function to render Agent Lists and Abandoned Calls ---
     function renderTechMetrics(dailyReport) {
         const countsDiv = document.getElementById('daily-call-counts');
         const avgTalkDiv = document.getElementById('daily-avg-talk-time'); 
@@ -486,13 +584,11 @@
             avgTalkDiv.innerHTML = '<div class="tech-metric" style="border-bottom:none; color:#aaaaaa;">No agent calls today.</div>';
         } else {
             allAgents.forEach(agent => {
-                // 1. Call Count Per Tech List
                 const count = agentsWithCalls[agent] || 0;
                 countsDiv.innerHTML += `
                     <div class="tech-metric">${agent} <strong>${count} </strong></div>
                 `;
                 
-                // 2. Average Talk Time List
                 const avgSeconds = agentsWithTalkTime[agent] || 0;
                 avgTalkDiv.innerHTML += `
                     <div class="tech-metric">${agent} <strong>${formatTime(avgSeconds)} </strong></div>
@@ -500,9 +596,8 @@
             });
         }
         
-        // 3. Abandoned Calls Detailed List
         let abandonedCalls = dailyReport.abandoned_call_details || [];
-        abandonedCalls = abandonedCalls.slice(-50).reverse(); // Show last 50 abandoned calls
+        abandonedCalls = abandonedCalls.slice(-50).reverse(); 
         document.getElementById('abandoned-calls-count-summary').textContent = abandonedCalls.length;
         
         if(abandonedCalls.length === 0) {
@@ -519,7 +614,6 @@
         }
     }
     
-    // --- Render Answered Call History ---
     function renderCallHistory(callLog) {
         const historyList = document.getElementById('call-history-list');
         historyList.innerHTML = '';
@@ -529,11 +623,9 @@
             return;
         }
         
-        // Show the last 50 entries (most recent)
         const recentCalls = callLog.slice(-50).reverse();
         
         recentCalls.forEach(call => {
-            // Parse the ISO 8601 timestamp
             const timestamp = new Date(call.timestamp + 'Z'); 
             const timeStr = timestamp.toLocaleTimeString(undefined, {
                 hour: 'numeric', 
@@ -545,7 +637,7 @@
             const callerName = call.caller_id !== 'Unknown' ? call.caller_id : call.caller_number;
             const callerNumber = (call.caller_number !== 'Unknown' && call.caller_number !== callerName) ? ` (${call.caller_number})` : '';
             
-            const agentColor = call.agent === "Abandoned" ? '#ff5252' : '#ff9800'; // Red for Abandoned, Orange for Answered
+            const agentColor = call.agent === "Abandoned" ? '#ff5252' : '#ff9800'; 
             const actionText = call.agent === "Abandoned" ? 
                 `abandoned the queue` : 
                 `answered by <span class="agent-name" style="color: ${agentColor};">${call.agent}</span>`;
@@ -562,7 +654,6 @@
         });
     }
     
-    // --- Render Parked Calls List ---
     function renderParkedCalls(parkedCalls) {
         const list = document.getElementById('parked-calls-list');
         list.innerHTML = '';
@@ -589,17 +680,36 @@
         'Arial, sans-serif', '"Helvetica Neue", Helvetica, Arial, sans-serif', '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif', '"Courier New", Courier, monospace', '"Times New Roman", Times, serif', 'Georgia, serif', 'Verdana, Geneva, sans-serif', '"Trebuchet MS", Helvetica, sans-serif', '"Lucida Console", Monaco, monospace', '"Palatino Linotype", "Book Antiqua", Palatino, serif', '"Gill Sans", "Gill Sans MT", Calibri, sans-serif', '"Impact", Charcoal, sans-serif', '"Comic Sans MS", cursive, sans-serif', '"Lucida Sans Unicode", "Lucida Grande", sans-serif', '"Tahoma", Geneva, sans-serif', '"Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif', '"Copperplate", "Copperplate Gothic Light", fantasy', '"Brush Script MT", cursive', '"Optima", "Segoe UI", Tahoma, Geneva, Verdana, sans-seif'
     ];
 
-    // Connect to the Server-Sent Events stream
+    function dismissSplash() {
+        const splash = document.getElementById('splash-page');
+        if (splash && !splash.classList.contains('fade-out')) {
+            splash.classList.add('fade-out');
+            setTimeout(() => { 
+                splash.style.display = 'none'; 
+            }, 800);
+        }
+    }
+
+
+    const safetyTimer = setTimeout(dismissSplash, 10000);
+
+
     let source = new EventSource("/stream");
+    let splashScheduled = false; 
 
     source.onmessage = function(event) {
+        
+        if (!splashScheduled) {
+            clearTimeout(safetyTimer); 
+            setTimeout(dismissSplash, 3000); 
+            splashScheduled = true;
+        }
+
         const data = JSON.parse(event.data);
         
-        // --- Current Queue KPIs ---
         document.getElementById('queue-count').textContent = data.current_queue_count;
         document.getElementById('longest-wait').textContent = formatTime(data.longest_wait_time_seconds);
 
-        // --- Daily Report KPIs ---
         if (data.daily_report && data.daily_report.avg_wait_time_seconds !== undefined) {
             const dailyAvgSec = Math.round(data.daily_report.avg_wait_time_seconds);
             const dailyAbandons = data.daily_report.abandoned_calls_count || 0;
@@ -613,22 +723,18 @@
             document.getElementById('daily-answered-count').textContent = '0';
         }
         
-        // --- Tech Performance & Abandoned Details ---
         if (data.daily_report) {
             renderTechMetrics(data.daily_report);
         }
         
-        // --- Update Answered Call History List ---
         if (data.call_log) {
             renderCallHistory(data.call_log);
         }
 
-        // --- Update Parked Calls List ---
         if (data.parked_calls) {
             renderParkedCalls(data.parked_calls);
         }
 
-        // --- Update Current Calls List ---
         const callsList = document.getElementById('calls-list');
         callsList.innerHTML = '';
         if (data.calls_in_queue.length === 0) {
@@ -639,18 +745,12 @@
                 nameDisplay = call.name !== 'Unknown' ? call.name : call.caller_id;
                 callerNumber = (call.caller_id !== 'Unknown' && call.caller_id !== nameDisplay) ? ` (${call.caller_id})` : '';
                 
-                // Color logic: Red for long waits, Amber for medium, Blue for short/normal
-                let waitColor = '#007ACC'; // Default: Blue
-                if (call.wait_time > 120) { // 2 minutes
-                    waitColor = '#ffc107'; // Amber (Warning)
-                }
-                if (call.wait_time > 240) { // 4 minutes
-                    waitColor = '#ff5252'; // Red (Critical)
-                }
+                let waitColor = '#007ACC'; 
+                if (call.wait_time > 120) waitColor = '#ffc107'; 
+                if (call.wait_time > 240) waitColor = '#ff5252'; 
 
                 let waitStyle = `font-weight: bold; color: ${waitColor};`;
                 if (call.wait_time > 300) {
-                    // This is the fun/chaotic part from your original code, kept it!
                     waitStyle += ` font-size: 100pt; font-family: ${fontOptions[call.wait_time % fontOptions.length]};`;
                 }
 
@@ -667,7 +767,6 @@
             });
         }
 
-        // --- Update Active Calls List ---
         const activeCallsList = document.getElementById('active-calls-list');
         activeCallsList.innerHTML = '';
         if (!data.live_active_calls || data.live_active_calls.length === 0) {
@@ -693,17 +792,18 @@
                 activeCallsList.appendChild(li);
             });
         }
-        
     };
 
     source.onerror = function(err) {
         console.error("EventSource failed:", err);
+        
+        dismissSplash();
+        
         document.getElementById('queue-count').textContent = "You ain't Connected";
         document.getElementById('longest-wait').textContent = "Still Ain't Connected";
         
         setTimeout(() => {
             if (source.readyState === EventSource.CLOSED) {
-                console.log("Reconnecting to EventSource...");
                 source = new EventSource("/stream"); 
             }
         }, 5000);
