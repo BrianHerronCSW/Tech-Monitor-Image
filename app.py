@@ -168,12 +168,13 @@ def getCID(phoneNumber) -> str:
     if len(phoneNumber) != 10:
         return "Unknown"
         
-    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value like {phoneNumber}"
+    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
     headers = {
         "Authorization": Auth,
         "ClientID": ClientID,
         "Content-Type": "application/json"
     }
+
     try:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
@@ -194,7 +195,7 @@ def getCompanyID(phoneNumber) -> str:
     if len(phoneNumber) != 10:
         return "Unknown"
         
-    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value like {phoneNumber}"
+    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
     headers = {
         "Authorization": Auth,
         "ClientID": ClientID,
@@ -243,7 +244,7 @@ def getRecentTicket(phoneNumber):
     if len(phoneNumber) != 10:
         return '<small>Internal extension / Non-10-digit number.</small>'
         
-    url_contact = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value like {phoneNumber}"
+    url_contact = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
     
     headers = {
         "Authorization": Auth,
@@ -268,7 +269,7 @@ def getRecentTicket(phoneNumber):
     except IndexError:
         return None
         
-    url_tickets = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/service/tickets?conditions=contact/id={contactID}&orderBy=dateEntered desc"
+    url_tickets = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/service/tickets?conditions=contact/id={contactID}&orderBy=dateEntered+desc"
     
     try:
         response = requests.get(url_tickets, headers=headers, timeout=10)
