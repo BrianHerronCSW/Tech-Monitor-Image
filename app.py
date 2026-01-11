@@ -96,9 +96,7 @@ QR_START_HOUR = int(os.getenv("QR-START-HOUR", 7))
 QR_END_HOUR = int(os.getenv("QR-END-HOUR", 18))
 
 
-logging.info(f"PBX IP: {HOST}")
-logging.info(f"Using Connectwise Auth: {Auth[:10]}...[REDACTED]")
-logging.info(f"Using Connectwise Client ID: {ClientID}")
+
 
 
 json_string = os.getenv("techs")
@@ -1370,9 +1368,15 @@ def main():
   if os.getenv("DEBUG_MODE") == "true":
     app.run(host='0.0.0.0', port=5000, debug=True)
 
+  time.sleep(30)
+  logging.info(f"PBX IP: {HOST}")
+  logging.info(f"Using Connectwise Auth: {Auth[:10]}...[REDACTED]")
+  logging.info(f"Using Connectwise Client ID: {ClientID}")
+
 gunicorn_logger = logging.getLogger('gunicorn.error')
 app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
+
 main()
 
 if __name__ == "__main__":
