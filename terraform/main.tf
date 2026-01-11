@@ -337,7 +337,7 @@ resource "azurerm_container_app" "CSW_LiveStatusMonitor_App" {
         secret_name = "password"
       }
       env {
-        name  = "cw_authorization"
+        name  = "cw-authorization"
         secret_name = "cw-authorization"
       }
       env {
