@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from gevent import monkey
 monkey.patch_all()
+
 import asyncio
 from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
@@ -24,7 +25,17 @@ import threading
 from flask import Flask, render_template, Response, jsonify 
 import time 
 
+# --- LOGGING CONFIGURATION ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
 
+# --- GLOBAL DATA STORES ---
 REAL_TIME_DATA = {
     "current_queue_count": 0,
     "longest_wait_time_seconds": 0,
@@ -48,28 +59,15 @@ REAL_TIME_DATA = {
     "parked_calls": [] 
 }
 
-
 ACTIVE_CALL_CW_CACHE = {}
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout) # This forces logs to the container stream
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
-
-
+# --- FLASK SETUP ---
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 manager_loop = asyncio.get_event_loop()
 
-
-
+# --- CONFIGURATION ---
 HOST = str(os.getenv("hostname", "Failed getting hostname"))
 USERNAME = str(os.getenv("username", "Failed getting username"))
 SECRET = str(os.getenv("password", "Failed getting password"))
@@ -90,39 +88,28 @@ SMTP_USER = str(os.getenv("smtp-auth-user"))
 SENDER_PASSWORD = str(os.getenv("smtp-auth-password"))
 RECIPIENT_EMAILS = os.getenv("recipient-emails", "").split(",") 
 
-
 QR_QUEUE = str(os.getenv("QR-QUEUE", "15"))
 QR_START_HOUR = int(os.getenv("QR-START-HOUR", 7))
 QR_END_HOUR = int(os.getenv("QR-END-HOUR", 18))
-
-
-
-
 
 json_string = os.getenv("techs")
 if json_string:
     try:
         tech_dict = json.loads(json_string)
-        logging.info("Successfully loaded tech_dict from environment variable.")
+        logger.info("Successfully loaded tech_dict from environment variable.")
     except json.JSONDecodeError as e:
-        logging.error(f"Failed to decode JSON from 'techs' env var: {e}")
+        logger.error(f"Failed to decode JSON from 'techs' env var: {e}")
         tech_dict = {}
 else:
-    logging.warning("Environment variable 'techs' is not set. Active call agent names may be 'Unknown'.")
+    logger.warning("Environment variable 'techs' is not set. Active call agent names may be 'Unknown'.")
     tech_dict = {}
-
-
 
 WEBHOOK = os.getenv("TEAMS_WEBHOOK_URL")
 WEBHOOK2 = os.getenv("TEAMS_WEBHOOK2_URL")
 WEBHOOK3 = os.getenv("TEAMS_WEBHOOK3_URL")
 WEBHOOK4 = os.getenv("TEAMS_WEBHOOK4_URL")
 
-manager = Manager(loop=manager_loop,
-                  host=HOST,
-                  username=USERNAME,
-                  secret=SECRET)
-
+manager = Manager(loop=manager_loop, host=HOST, username=USERNAME, secret=SECRET)
 
 teams = pymsteams.connectorcard(WEBHOOK)
 teams2 = pymsteams.connectorcard(WEBHOOK2)
@@ -130,7 +117,7 @@ teams3 = pymsteams.connectorcard(WEBHOOK3)
 teams4 = pymsteams.connectorcard(WEBHOOK4)
 teams4.title("QR LOG")
 
-
+# --- STATE TRACKING ---
 hourly_wait_times = []
 daily_wait_times = []
 daily_call_counts = {}
@@ -144,42 +131,38 @@ daily_abandoned_call_objects = []
 abandoned_call_namnum = {}
 daily_call_log = []
 
-
 AGENT_TOTAL_TALK_TIME = {}
 ANSWERED_CALL_START_TIMES = {}
 
 
-
+# --- HELPER FUNCTIONS ---
 
 def in_hours(fn):
-    """Only proceed with function if it's not after-hours."""
     @wraps(fn)
     async def wrapper(*args, **kwargs):
         now = datetime.today()
-        if (
-            now.weekday() < 5 and
-            QR_END_HOUR >= now.hour >= QR_START_HOUR
-        ):
+        if (now.weekday() < 5 and QR_END_HOUR >= now.hour >= QR_START_HOUR):
             await fn(*args, **kwargs)
     return wrapper
 
 def getCID(phoneNumber) -> str:
-
     if phoneNumber.startswith('1') and len(phoneNumber) == 11:
         phoneNumber = phoneNumber[1:]
-        
     if len(phoneNumber) != 10:
         return "Unknown"
         
-    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
+    # Use params dictionary to handle encoding safely
+    url = "https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts"
+    condition = f'communicationItems/value like "%{phoneNumber}%"'
+    
     headers = {
         "Authorization": Auth,
         "ClientID": ClientID,
         "Content-Type": "application/json"
     }
-
+    
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, params={"childconditions": condition}, timeout=10)
         response.raise_for_status()
         data = response.json()
         if not data:
@@ -194,18 +177,19 @@ def getCID(phoneNumber) -> str:
 def getCompanyID(phoneNumber) -> str:
     if phoneNumber.startswith('1') and len(phoneNumber) == 11:
         phoneNumber = phoneNumber[1:]
-        
     if len(phoneNumber) != 10:
         return "Unknown"
         
-    url = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
+    url = "https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts"
+    condition = f'communicationItems/value like "%{phoneNumber}%"'
+
     headers = {
         "Authorization": Auth,
         "ClientID": ClientID,
         "Content-Type": "application/json"
     }
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, params={"childconditions": condition}, timeout=10)
         response.raise_for_status()
         data = response.json()
         if not data:
@@ -233,21 +217,17 @@ def getCompanyNumber(companyID):
         return "Unknown"
 
 def getRecentTicket(phoneNumber):
-    """
-    Fetches the most recent ticket for a phone number.
-    This is a BLOCKING function and MUST be called with run_in_executor.
-    """
     if phoneNumber == "Unknown":
         return None
     
-
     if phoneNumber.startswith('1') and len(phoneNumber) == 11:
         phoneNumber = phoneNumber[1:]
 
     if len(phoneNumber) != 10:
         return '<small>Internal extension / Non-10-digit number.</small>'
         
-    url_contact = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childconditions=communicationItems/value+like+{phoneNumber}"
+    url_contact = "https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts"
+    condition = f'communicationItems/value like "%{phoneNumber}%"'
     
     headers = {
         "Authorization": Auth,
@@ -256,7 +236,7 @@ def getRecentTicket(phoneNumber):
     }
 
     try:
-        response = requests.get(url_contact, headers=headers, timeout=10)
+        response = requests.get(url_contact, headers=headers, params={"childconditions": condition}, timeout=10)
         response.raise_for_status()
         data = response.json()
         
@@ -264,15 +244,14 @@ def getRecentTicket(phoneNumber):
             return '<small>No contact found.</small>'
         
         contactID = str(data[0].get("id"))
-        companyID = str(data[0].get("company", {}).get('id'))
         
     except requests.RequestException as e:
-        logging.error(f"Error getting CW Contact for {phoneNumber}: {e}")
+        logger.error(f"Error getting CW Contact for {phoneNumber}: {e}")
         return '<small>Error fetching contact.</small>'
     except IndexError:
         return None
         
-    url_tickets = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/service/tickets?conditions=contact/id={contactID}&orderBy=dateEntered+desc"
+    url_tickets = f"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/service/tickets?conditions=contact/id={contactID}&orderBy=dateEntered desc"
     
     try:
         response = requests.get(url_tickets, headers=headers, timeout=10)
@@ -288,7 +267,7 @@ def getRecentTicket(phoneNumber):
         else:
             return '<small>No recent ticket.</small>' 
     except requests.RequestException as e:
-        logging.error(f"Error getting CW Ticket for {contactID}: {e}")
+        logger.error(f"Error getting CW Ticket for {contactID}: {e}")
         return '<small>Error fetching ticket.</small>' 
 
 
@@ -307,7 +286,7 @@ async def get_graph_api_token():
 
 
 async def send_urgent_alert(caller_id, minutes, seconds, cid_name):
-    logging.info(f"Attempting to send URGENT alert to group chat for {caller_id}...")
+    logger.info(f"Attempting to send URGENT alert to group chat for {caller_id}...")
     
     teams4.title("Long Hold Time")
     teams4.text(f"Long hold time detected on {QR_QUEUE} queue for {caller_id}. Waiting for {minutes} minutes and {seconds} seconds.")
@@ -391,11 +370,11 @@ async def send_urgent_alert(caller_id, minutes, seconds, cid_name):
             manager.loop.run_in_executor(None, teams4.send)
             
         except httpx.HTTPStatusError as e:
-            logging.error(f"ERROR sending Teams message: {e.response.status_code} - {e.response.text}")
+            logger.error(f"ERROR sending Teams message: {e.response.status_code} - {e.response.text}")
 
 async def send_email_async(html_body, plain_body):
     if not all([SMTP_SERVER, SMTP_SENDER_EMAIL, SENDER_PASSWORD, RECIPIENT_EMAILS]):
-        logging.warning("Email configuration is incomplete. Skipping email.")
+        logger.warning("Email configuration is incomplete. Skipping email.")
         return
 
     def email_sender_sync():
@@ -406,51 +385,52 @@ async def send_email_async(html_body, plain_body):
             msg['To'] = RECIPIENT_EMAILS
             msg.set_content(plain_body)
             msg.add_alternative(html_body, subtype='html')
-            logging.info("Email message created successfully.")
+            logger.info("Email message created successfully.")
 
         except Exception as e:
-            logging.error(f"Error creating the email message: {e}")
+            logger.error(f"Error creating the email message: {e}")
             return 
 
         server = None
         try:
-            logging.info(f"Connecting to SMTP server at {SMTP_SERVER}:{SMTP_PORT}...")
+            logger.info(f"Connecting to SMTP server at {SMTP_SERVER}:{SMTP_PORT}...")
             if SMTP_PORT == 465:
-                logging.info("Establishing a direct SSL connection...")
+                logger.info("Establishing a direct SSL connection...")
                 server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
             else:
                 server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-                logging.info("Securing connection with STARTTLS...")
+                logger.info("Securing connection with STARTTLS...")
                 server.starttls()
-            logging.info("Connection established.")
+            logger.info("Connection established.")
 
             if SMTP_USER and SENDER_PASSWORD:
-                logging.info(f"Logging in as {SMTP_USER}...")
+                logger.info(f"Logging in as {SMTP_USER}...")
                 server.login(SMTP_USER, SENDER_PASSWORD)
-                logging.info("Logged in successfully.")
+                logger.info("Logged in successfully.")
             else:
-                logging.info("Skipping login as no user or password was provided.")
+                logger.info("Skipping login as no user or password was provided.")
             
-            logging.info(f"Sending email to {RECIPIENT_EMAILS} from {SMTP_SENDER_EMAIL}...")
+            logger.info(f"Sending email to {RECIPIENT_EMAILS} from {SMTP_SENDER_EMAIL}...")
             server.send_message(msg)
-            logging.info("✅ Email sent successfully!")
+            logger.info("✅ Email sent successfully!")
 
         except smtplib.SMTPAuthenticationError as e:
-            logging.error(f"❌ Authentication failed for user {SMTP_USER}. Please check credentials. Server says: {e}")
+            logger.error(f"❌ Authentication failed for user {SMTP_USER}. Please check credentials. Server says: {e}")
         except ConnectionRefusedError:
-            logging.error(f"❌ Connection refused. Is the SMTP server address '{SMTP_SERVER}' and port '{SMTP_PORT}' correct?")
+            logger.error(f"❌ Connection refused. Is the SMTP server address '{SMTP_SERVER}' and port '{SMTP_PORT}' correct?")
         except smtplib.SMTPConnectError as e:
-            logging.error(f"❌ Failed to connect to the server. Check server address, port, and firewall rules. Error: {e}")
+            logger.error(f"❌ Failed to connect to the server. Check server address, port, and firewall rules. Error: {e}")
         except Exception as e:
-            logging.error(f"❌ An unexpected error occurred: {e}")
+            logger.error(f"❌ An unexpected error occurred: {e}")
         finally:
             if server:
-                logging.info("Closing connection.")
+                logger.info("Closing connection.")
                 server.quit()
 
     await manager.loop.run_in_executor(None, email_sender_sync)
 
 
+# --- Worker Functions ---
 async def check_queue_periodically():
     global alerted_calls
     alerted_calls = []
@@ -462,7 +442,7 @@ async def check_queue_periodically():
                 {'Action': 'QueueStatus', 'Queue': QR_QUEUE}
             )
         except Exception as e:
-            logging.error(f"Error checking queue status: {e}")
+            logger.error(f"Error checking queue status: {e}")
             await asyncio.sleep(5)
             continue
             
@@ -492,15 +472,13 @@ async def check_queue_periodically():
                 call_info = call_map.get(event.get("Uniqueid", "N/A"), {})
                 cid_name = call_info.get("caller_id", "Unknown")
 
-
                 if cid_name == "Unknown":
                     try:
                         cid_name_from_api = await manager.loop.run_in_executor(None, getCID, caller_id)
                         if cid_name_from_api != "Unknown":
                              cid_name = cid_name_from_api
                     except Exception as e:
-                        logging.error(f"Error fetching CID for {caller_id}: {e}")
-
+                        logger.error(f"Error fetching CID for {caller_id}: {e}")
 
                 current_calls_data.append({
                     "id": event.get("Uniqueid", "N/A"),
@@ -509,18 +487,15 @@ async def check_queue_periodically():
                     "wait_time": wait_time_seconds
                 })
                 
-
                 if wait_time_minutes >= 4 and caller_id not in alerted_calls:
-                    logging.info(f"Wait time for {caller_id} is {wait_time_minutes}m. Triggering urgent alert.")
+                    logger.info(f"Wait time for {caller_id} is {wait_time_minutes}m. Triggering urgent alert.")
                     await send_urgent_alert(caller_id, wait_time_minutes, wait_time_remaining_seconds, cid_name)
                     alerted_calls.append(caller_id)
         
-
         REAL_TIME_DATA["current_queue_count"] = current_queue_count
         REAL_TIME_DATA["longest_wait_time_seconds"] = longest_wait_time
         REAL_TIME_DATA["calls_in_queue"] = current_calls_data
         
-
         if longest_wait_time > 300:
             teams.color("FF0000")
         elif longest_wait_time > 0:
@@ -540,19 +515,12 @@ async def check_queue_periodically():
 
 async def update_channel_states_periodically():
     """
-    Continuously monitors CoreShowChannels to find live calls, tracking the transition
-    from Parked to Answered to accurately log the new answering agent.
+    Continuously monitors CoreShowChannels to find live calls.
+    Removed cleanup logic to prevent premature deletion of call states.
     """
-    
-
     INTERNAL_MAIN_LINES = {"5122200208", "15122200208", "7377570786", "17377570786"}
 
     def extract_cid_base(channel_string):
-        """
-        Helper to extract the base extension/peer name from channel string.
-        Includes support for SIP, Local, and PJSIP channel types.
-        """
-
         return channel_string.split("-")[0].split("@")[0].replace("SIP/", "").replace("Local/", "").replace("PJSIP/", "")
 
     while True:
@@ -563,7 +531,7 @@ async def update_channel_states_periodically():
                 'Action': 'CoreShowChannels'
             })
         except Exception as e:
-            logging.error(f"Error fetching CoreShowChannels: {e}")
+            logger.error(f"Error fetching CoreShowChannels: {e}")
             await asyncio.sleep(10)
             continue
             
@@ -588,7 +556,6 @@ async def update_channel_states_periodically():
 
                 bridged_channel_id = msg.get('BridgedChannel')
                 
-
                 if bridged_channel_id and bridged_channel_id in channels:
                     bridged_msg = channels[bridged_channel_id]
                     
@@ -604,18 +571,13 @@ async def update_channel_states_periodically():
                     agent_msg = None
                     caller_msg = None
                     
-
                     if is_msg_agent and not is_bridged_msg_agent:
                         agent_msg = msg
                         caller_msg = bridged_msg
                     elif is_bridged_msg_agent and not is_msg_agent:
                         agent_msg = bridged_msg
                         caller_msg = msg
-                        
-
                     elif is_msg_agent and is_bridged_msg_agent:
-                        # If both CIDs are in tech_dict (e.g., 125 and 127 in your scenario),
-                        # prioritize the SIP/PJSIP channel as the agent's live speaking channel.
                         if msg.Channel.startswith('SIP') or msg.Channel.startswith('PJSIP'):
                             agent_msg = msg
                             caller_msg = bridged_msg
@@ -623,17 +585,12 @@ async def update_channel_states_periodically():
                             agent_msg = bridged_msg
                             caller_msg = msg
                         else:
-
                             continue 
-                            
                     else:
-
                         continue 
-                        
 
                     if caller_msg.get('Application') == 'Queue':
                         continue
-
 
                     agent_cid = extract_cid_base(agent_msg.Channel)
                     agent_name = tech_dict.get(agent_cid, f"Ext {agent_cid}") 
@@ -643,15 +600,11 @@ async def update_channel_states_periodically():
                     current_state = call_states.get(caller_uniqueid, {"status": "unknown", "agent": None})
 
                     if current_state["status"] == "parked" or current_state["agent"] != agent_name:
-                        
                         if current_state["status"] == "parked":
-                            
                             connected_line_num = agent_msg.get('ConnectedLineNum')
-                            
                             if connected_line_num and extract_cid_base(connected_line_num) in tech_dict:
                                 agent_name = tech_dict.get(extract_cid_base(connected_line_num), agent_name)
-                            
-                            logging.info(f"Call {caller_uniqueid} unparked and assigned to: {agent_name}")
+                            logger.info(f"Call {caller_uniqueid} unparked and assigned to: {agent_name}")
 
                         call_states[caller_uniqueid] = {"status": "answered", "agent": agent_name}
 
@@ -659,7 +612,6 @@ async def update_channel_states_periodically():
                          ANSWERED_CALL_START_TIMES[caller_uniqueid] = datetime.now()
                          
                     caller_num = "Unknown"
-                    
                     nums_to_check = [
                         caller_msg.get('CallerIDNum'),
                         caller_msg.get('ConnectedLineNum'),
@@ -675,8 +627,8 @@ async def update_channel_states_periodically():
                     if caller_uniqueid in call_map:
                          caller_name = call_map[caller_uniqueid].get('caller_id', 'Unknown')
                          if caller_num == "Unknown":
-                              caller_num = call_map[caller_uniqueid].get('number', 'Unknown')
-                              
+                             caller_num = call_map[caller_uniqueid].get('number', 'Unknown')
+                             
                     if caller_name == "Unknown" and len(caller_num) >= 10:
                         try:
                             caller_name_from_cid = await manager.loop.run_in_executor(None, getCID, caller_num)
@@ -718,14 +670,12 @@ async def update_channel_states_periodically():
                     else:
                         recent_ticket_html = "<small>Internal/Outbound Call</small>"
 
-
                     current_live_calls.append({
                         "agent_name": agent_name,
                         "caller_name": caller_name,
                         "duration_seconds": duration_sec,
                         "recent_ticket": recent_ticket_html 
                     })
-                
 
                 elif msg.get('Application') == 'Parked Call':
                     caller_uniqueid = msg.get('BridgedUniqueid') or msg.get('Uniqueid')
@@ -757,15 +707,10 @@ async def update_channel_states_periodically():
                 logging.error(f"Skipping channel {channel_id} due to processing error: {channel_error}")
                 continue 
 
-        keys_to_delete = [
-            uid for uid in list(call_states.keys()) 
-            if uid not in current_unique_ids and call_states[uid]["status"] != "waiting"
-        ]
-        for uid in keys_to_delete:
-            del call_states[uid]
-            
+
         REAL_TIME_DATA["live_active_calls"] = current_live_calls
         REAL_TIME_DATA["parked_calls"] = current_parked_calls
+
 async def send_hourly_report():
   while True:
     if datetime.now().hour > QR_END_HOUR or datetime.now().hour < QR_START_HOUR:
@@ -923,7 +868,7 @@ async def AgentConnect(manager, message):
   call_id = message.get("Uniqueid")
   agent_name = message.MemberName if message.MemberName else "Unknown"
   agent_name = str(agent_name)
-  if call_id and call_id in call_states:
+  if call_id:
     call_states[call_id] = {"status": "answered", "agent": agent_name}
     
     ANSWERED_CALL_START_TIMES[call_id] = datetime.now()
@@ -1301,7 +1246,7 @@ async def update_daily_stats_periodically():
     REAL_TIME_DATA["call_log"] = list(daily_call_log)
     
 
-
+# --- Flask Routes ---
 
 @app.route("/")
 def index():
@@ -1324,7 +1269,7 @@ def stream():
   return Response(generate(), mimetype="text/event-stream")
 
 
-
+# --- Main Application Threading ---
 
 def run_asterisk_manager_loop():
   """Starts the Asterisk manager connection and runs its asyncio loop."""
@@ -1332,28 +1277,28 @@ def run_asterisk_manager_loop():
   teams4.text("The Asterisk manager monitoring service has started successfully.")
   manager.loop.run_in_executor(None, teams4.send)
   
-  manager.connect()
+  # Create a new loop for this thread to prevent conflict
+  new_loop = asyncio.new_event_loop()
+  asyncio.set_event_loop(new_loop)
   
-
-  asyncio.ensure_future(check_queue_periodically(), loop=manager.loop)
-  asyncio.ensure_future(update_channel_states_periodically(), loop=manager.loop)
-  asyncio.ensure_future(send_hourly_report(), loop=manager.loop)
-  asyncio.ensure_future(send_daily_report(), loop=manager.loop)
-  asyncio.ensure_future(resetDailyQueueinfo(), loop=manager.loop)
-  asyncio.ensure_future(logCurrentQueueinfo(), loop=manager.loop)
-  asyncio.ensure_future(update_daily_stats_periodically(), loop=manager.loop)
+  # Update the manager to use this specific loop
+  manager.loop = new_loop
+  
   try:
-    manager.loop.run_forever()
-  except KeyboardInterrupt:
-    manager.loop.close()
+    manager.connect()
+    logger.info(f"Connecting to Asterisk at {HOST}...")
     
+    asyncio.ensure_future(check_queue_periodically(), loop=new_loop)
+    asyncio.ensure_future(update_channel_states_periodically(), loop=new_loop)
+    asyncio.ensure_future(send_hourly_report(), loop=new_loop)
+    asyncio.ensure_future(send_daily_report(), loop=new_loop)
+    asyncio.ensure_future(resetDailyQueueinfo(), loop=new_loop)
+    asyncio.ensure_future(logCurrentQueueinfo(), loop=new_loop)
+    asyncio.ensure_future(update_daily_stats_periodically(), loop=new_loop)
     
-@app.route("/health")
-def health_check():
-  if manager.authenticated:
-    return "OK", 200
-  else:
-    return "Service Unavailable", 503
+    new_loop.run_forever()
+  except Exception as e:
+    logger.error(f"FATAL: Asterisk Thread Crashed: {e}")
 
 def main():
   try:
@@ -1373,11 +1318,12 @@ def main():
   logging.info(f"Using Connectwise Auth: {Auth[:10]}...[REDACTED]")
   logging.info(f"Using Connectwise Client ID: {ClientID}")
 
-gunicorn_logger = logging.getLogger('gunicorn.error')
-app.logger.handlers = gunicorn_logger.handlers
-app.logger.setLevel(gunicorn_logger.level)
-
-main()
+# This is the "Gunicorn Bridge" - it runs when Gunicorn imports the file
+if __name__ != "__main__":
+  gunicorn_logger = logging.getLogger('gunicorn.error')
+  app.logger.handlers = gunicorn_logger.handlers
+  app.logger.setLevel(gunicorn_logger.level)
+  main()
 
 if __name__ == "__main__":
   pass
