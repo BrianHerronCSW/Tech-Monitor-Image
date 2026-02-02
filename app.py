@@ -257,15 +257,15 @@ def getRecentTicket(phoneNumber):
         response = requests.get(url_tickets, headers=headers, timeout=10)
         response.raise_for_status()
         tickets = response.json()
-        if tickets:
-            ticket_id = tickets[0]['id']
-            summary = tickets[0]['summary']
-            ticket_url = f"https://na.myconnectwise.net/v4_6_release/services/system_io/Service/fv_sr100_request.rails?service_recid={ticket_id}&companyName=capstone"
-            
-            output = f'<small><a href="{ticket_url}" target="_blank">#{ticket_id} - {summary}</a></small>'
-            return output
-        else:
-            return '<small>No recent ticket.</small>' 
+        for x in tickets:
+            logger.info(f"Ticket found: {x}")
+            if x.get("board").get("name") == "!CSW - Help Desk" or x.get("board").get("name") == "!CSW - Emergency Support" or x.get("board").get("name") == "!CSW - MS Projects (In Scope)":
+                ticket_id = x['id']
+                summary = x['summary']
+                ticket_url = f"https://na.myconnectwise.net/v4_6_release/services/system_io/Service/fv_sr100_request.rails?service_recid={ticket_id}&companyName=capstone"
+                output = f'<small><a href="{ticket_url}" target="_blank">#{ticket_id} - {summary}</a></small>'
+                return output
+        return '<small>No recent ticket.</small>' 
     except requests.RequestException as e:
         logger.error(f"Error getting CW Ticket for {contactID}: {e}")
         return '<small>Error fetching ticket.</small>' 
