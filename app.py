@@ -257,6 +257,7 @@ def getRecentTicket(phoneNumber):
         response = requests.get(url_tickets, headers=headers, timeout=10)
         response.raise_for_status()
         tickets = response.json()
+        # Added Filter by these specific boards. At the request of Charles.
         for x in tickets:
             logger.info(f"Ticket found: {x}")
             if x.get("board").get("name") == "!CSW - Help Desk" or x.get("board").get("name") == "!CSW - Emergency Support" or x.get("board").get("name") == "!CSW - MS Projects (In Scope)":
